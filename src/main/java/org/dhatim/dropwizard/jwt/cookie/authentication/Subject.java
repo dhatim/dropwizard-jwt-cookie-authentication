@@ -18,10 +18,14 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Claims;
 import java.security.Principal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 
 public class Subject implements Principal{
     
     private final static String LONG_TERM = "ltt"; // long-term token == rememberme
+    private final static String ROLES = "rls";
     
     protected final Claims claims;
 
@@ -34,7 +38,17 @@ public class Subject implements Principal{
     }
     
     public boolean hasRole(String role){
-        return true;
+        return getRoles().contains(role);
+    }
+    
+    public Collection<String> getRoles(){
+        return Optional.ofNullable(claims.get(ROLES))
+                .map(Collection.class::cast)
+                .orElse(Collections.emptyList());
+    }
+    
+    public void setRoles(Collection<String> roles){
+        claims.put(ROLES, roles);
     }
     
     public boolean isLongTermToken(){

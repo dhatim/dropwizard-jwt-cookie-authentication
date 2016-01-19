@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.UUID;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -88,6 +89,31 @@ public class JwtCookieAuthenticationTest {
         //default maxAge is 604800s (7 days)
         Assert.assertNotNull(cookie);
         Assert.assertEquals(604800, cookie.getMaxAge());
+    }
+    
+    @Test
+    public void testRoles(){
+        WebTarget restrictedTarget = target.path("restricted");
+        //try to access the resource without cookie (-> 401 UNAUTHORIZED) 
+        Response response = restrictedTarget.request().get();
+        Assert.assertEquals(401, response.getStatus());
+        
+        //set a subject without the admin role (-> 403 FORBIDDEN)
+        Subject subject = new Subject(Jwts.claims().setSubject(UUID.randomUUID().toString()));
+        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(subject));
+        NewCookie cookie = response.getCookies().get("sessionToken");
+        Assert.assertNotNull(cookie);
+        response = restrictedTarget.request().cookie(cookie).get();
+        Assert.assertEquals(403, response.getStatus());
+        
+        //set a subject with the admin role (-> 200 OK)
+        subject.setRoles(Collections.singleton("admin"));
+        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(subject));
+        cookie = response.getCookies().get("sessionToken");
+        Assert.assertNotNull(cookie);
+        response = restrictedTarget.request().cookie(cookie).get();
+        Assert.assertEquals(200, response.getStatus());
+        
     }
 
     private Subject getSubject(Response response) throws IOException {

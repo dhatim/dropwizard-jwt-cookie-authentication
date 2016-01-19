@@ -16,6 +16,7 @@
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import io.dropwizard.auth.Auth;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -48,6 +49,13 @@ public class TestResource {
     @DontRefreshSession
     public Subject getSubjectWithoutRefreshingSession(@Auth Subject subject){
         return subject;
+    }
+    
+    @GET
+    @Path("restricted")
+    @RolesAllowed("admin")
+    public String getRestrisctedResource(){
+        return "SuperSecretStuff";
     }
     
 }
