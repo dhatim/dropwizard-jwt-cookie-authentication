@@ -38,22 +38,37 @@ public void initialize(Bootstrap<MyApplicationConfiguration> bootstrap) {
 
 The authentication result is an instance of `Subject` which must be initially put in the security context using `requestContext.setSecurityContext`
 ```java
-requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestContext.getSecurityContext().isSecure()));
+requestContext.setSecurityContext(
+  new JwtCookieSecurityContext(
+    new Subject(subjectName),
+    requestContext.getSecurityContext().isSecure()
+  )
+);
 ```
 
 Once a subject has been set, it can be retrieved using the `@Auth` annotation in method signatures.
 
-Each time an API endpont is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` where this behavior is not wanted.
+Each time an API endpoint is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` on methods where this behavior is unwanted.
 
 To specify a max age in the cookie (aka "remember me"), use `Subject.setLongTermToken(true)`.
 
-Sample application resource:
+Subject roles can be specified via the `Subject.setRoles` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
+
+Additional custom data can be stored in the Subject using `Subject.getClaims().put(key, value)`.
+
+## Sample application resource
 ```java
 @POST
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public Subject setSubject(@Context ContainerRequestContext requestContext, Subject subject){
-    requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestContext.getSecurityContext().isSecure()));
+public Subject setSubject(@Context ContainerRequestContext requestContext, String subjectName){
+    Subject subject = new Subject(subjectName);
+    requestContext.setSecurityContext(
+      new JwtCookieSecurityContext(
+        new Subject(subjectName),
+        requestContext.getSecurityContext().isSecure()
+      )
+    );
     return subject;
 }
 
@@ -69,6 +84,13 @@ public Subject getSubject(@Auth Subject subject){
 @DontRefreshSession
 public Subject getSubjectWithoutRefreshingSession(@Auth Subject subject){
     return subject;
+}
+
+@GET
+@Path("restricted")
+@RolesAllowed("admin")
+public String getRestrisctedResource(){
+    return "SuperSecretStuff";
 }
 ```
 
