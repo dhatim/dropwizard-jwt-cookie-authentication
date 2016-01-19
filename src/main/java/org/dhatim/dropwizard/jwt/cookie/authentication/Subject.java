@@ -17,6 +17,7 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,17 @@ public class Subject implements Principal{
     
     protected final Claims claims;
 
+    public Subject(String name, boolean longTerm, Collection<String> roles){
+        claims = Jwts.claims();
+        claims.setSubject(name);
+        claims.put(LONG_TERM, longTerm);
+        claims.put(ROLES, roles);
+    }
+    
+    public Subject(String name){
+        this(name, false, Collections.emptyList());
+    }
+    
     public Subject(@JsonProperty("claims") Claims claims) {
         this.claims = claims;
     }
