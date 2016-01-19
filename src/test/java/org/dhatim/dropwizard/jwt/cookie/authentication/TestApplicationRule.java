@@ -1,0 +1,75 @@
+package org.dhatim.dropwizard.jwt.cookie.authentication;
+
+import com.codahale.metrics.health.HealthCheck;
+import io.dropwizard.Application;
+import io.dropwizard.Configuration;
+import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.server.SimpleServerFactory;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.testing.DropwizardTestSupport;
+import java.net.URI;
+import org.junit.rules.ExternalResource;
+
+/**
+ * Inspired by DropwizardClientRule (which sadly cannot register bundles)
+ */
+public class TestApplicationRule extends ExternalResource {
+
+    private final DropwizardTestSupport<Configuration> testSupport;
+    
+    public TestApplicationRule(){
+        this.testSupport = new DropwizardTestSupport<Configuration>(FakeApplication.class, "") {
+            @Override
+            public Application<Configuration> newApplication() {
+                return new FakeApplication();
+            }
+        };
+    }
+
+    public URI baseUri() {
+        return URI.create("http://localhost:" + testSupport.getLocalPort() + "/application");
+    }
+    
+    public DropwizardTestSupport<Configuration> getSupport(){
+        return testSupport;
+    }
+
+    @Override
+    protected void before() throws Throwable {
+        testSupport.before();
+    }
+
+    @Override
+    protected void after() {
+        testSupport.after();
+    }
+    
+    private class FakeApplication extends Application<Configuration> {
+
+        @Override
+        public void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(new JwtCookieAuthBundle<>(c -> new JwtCookieAuthConfiguration()));
+        }
+
+        @Override
+        public void run(Configuration configuration, Environment environment) {
+            //choose a random port
+            SimpleServerFactory serverConfig = new SimpleServerFactory();
+            configuration.setServerFactory(serverConfig);
+            HttpConnectorFactory connectorConfig = (HttpConnectorFactory) serverConfig.getConnector();
+            connectorConfig.setPort(0);
+
+            //Dummy health check to suppress the startup warning.
+            environment.healthChecks().register("dummy", new HealthCheck() {
+                @Override
+                protected HealthCheck.Result check() {
+                    return HealthCheck.Result.healthy();
+                }
+            });
+
+            environment.jersey().register(new com.example.trying.TestResource());
+        }
+
+    }
+}
