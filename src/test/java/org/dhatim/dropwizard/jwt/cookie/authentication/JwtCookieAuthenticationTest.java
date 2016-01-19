@@ -50,7 +50,7 @@ public class JwtCookieAuthenticationTest {
     public void testCookieRefresh() throws IOException {
         String subjectName = UUID.randomUUID().toString();
         //a POST will set the subject
-        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new Subject(Jwts.claims().setSubject(subjectName))));
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new Subject(subjectName)));
         Assert.assertEquals(200, response.getStatus());
         Subject subject = getSubject(response);
         Assert.assertEquals(subjectName, subject.getName());
@@ -67,7 +67,6 @@ public class JwtCookieAuthenticationTest {
         Assert.assertEquals(subjectName, subject.getName());
         NewCookie cookie2 = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie2);
-        Assert.assertEquals(-1, cookie1.getMaxAge());
         Assert.assertNotSame(cookie1.getValue(), cookie2.getValue());
 
         //requests made to methods annotated with @DontRefreshSession should not refresh the cookie
@@ -80,32 +79,38 @@ public class JwtCookieAuthenticationTest {
 
     @Test
     public void testRememberMe() {
-        //a long term token should set a persistent cookie
+        //a volatile subject should not set a volatile cookie
         Response response = target.request(MediaType.APPLICATION_JSON).post(
-                Entity.json(
-                        new Subject(Jwts.claims().setSubject(UUID.randomUUID().toString()))
-                            .setLongTermToken(true)));
+                Entity.json(new Subject(UUID.randomUUID().toString(), false, Collections.emptyList())));
         NewCookie cookie = response.getCookies().get("sessionToken");
+        //default maxAge is 604800s (7 days)
+        Assert.assertNotNull(cookie);
+        Assert.assertEquals(-1, cookie.getMaxAge());
+
+        //a long term subject should set a persistent cookie
+        response = target.request(MediaType.APPLICATION_JSON).post(
+                Entity.json(new Subject(UUID.randomUUID().toString(), true, Collections.emptyList())));
+        cookie = response.getCookies().get("sessionToken");
         //default maxAge is 604800s (7 days)
         Assert.assertNotNull(cookie);
         Assert.assertEquals(604800, cookie.getMaxAge());
     }
-    
+
     @Test
-    public void testRoles(){
+    public void testRoles() {
         WebTarget restrictedTarget = target.path("restricted");
         //try to access the resource without cookie (-> 401 UNAUTHORIZED) 
         Response response = restrictedTarget.request().get();
         Assert.assertEquals(401, response.getStatus());
-        
+
         //set a subject without the admin role (-> 403 FORBIDDEN)
-        Subject subject = new Subject(Jwts.claims().setSubject(UUID.randomUUID().toString()));
+        Subject subject = new Subject(UUID.randomUUID().toString());
         response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(subject));
         NewCookie cookie = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie);
         response = restrictedTarget.request().cookie(cookie).get();
         Assert.assertEquals(403, response.getStatus());
-        
+
         //set a subject with the admin role (-> 200 OK)
         subject.setRoles(Collections.singleton("admin"));
         response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(subject));
@@ -113,7 +118,7 @@ public class JwtCookieAuthenticationTest {
         Assert.assertNotNull(cookie);
         response = restrictedTarget.request().cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
-        
+
     }
 
     private Subject getSubject(Response response) throws IOException {
