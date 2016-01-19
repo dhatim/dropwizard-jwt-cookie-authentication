@@ -43,7 +43,7 @@ requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestC
 
 Once a subject has been set, it can be retrieved using the `@Auth` annotation in method signatures.
 
-Each time an API is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` where this behavior is not wanted.
+Each time an API endpont is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` where this behavior is not wanted.
 
 To specify a max age in the cookie (aka "remember me"), use `Subject.setLongTermToken(true)`.
 
