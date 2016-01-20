@@ -5,6 +5,18 @@ Saving session information in JWT cookies allows your server to remain stateless
 
 ## Enabling the bundle
 
+### Add the dropwizard-jwt-cookie-authentication dpendency
+
+Add the dropwizard-jwt-cookie-authentication library as a dependency to your `pom.xml` file:
+
+```xml
+<dependency>
+    <groupId>org.dhatim</groupId>
+    <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
+    <version>1.0.0</version>
+</dependency>
+  ```
+
 ### Edit you app's Dropwizard YAML config file (not required, default values are shown below)
 
 ```yml
@@ -15,7 +27,7 @@ jwtCookieAuth:
   sessionExpiryPersistent: P7d
 ```
 
-### Add the 'JwtCookieAuthConfiguration' to your application configuration class (`MyApplicationConfiguration`):
+### Add the 'JwtCookieAuthConfiguration' to your application configuration class:
 ```java
 @Valid
 @NotNull
@@ -38,22 +50,37 @@ public void initialize(Bootstrap<MyApplicationConfiguration> bootstrap) {
 
 The authentication result is an instance of `Subject` which must be initially put in the security context using `requestContext.setSecurityContext`
 ```java
-requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestContext.getSecurityContext().isSecure()));
+requestContext.setSecurityContext(
+  new JwtCookieSecurityContext(
+    new Subject(subjectName),
+    requestContext.getSecurityContext().isSecure()
+  )
+);
 ```
 
 Once a subject has been set, it can be retrieved using the `@Auth` annotation in method signatures.
 
-Each time an API endpont is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` where this behavior is not wanted.
+Each time an API endpoint is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` on methods where this behavior is unwanted.
 
 To specify a max age in the cookie (aka "remember me"), use `Subject.setLongTermToken(true)`.
 
-Sample application resource:
+Subject roles can be specified via the `Subject.setRoles(...)` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
+
+Additional custom data can be stored in the Subject using `Subject.getClaims().put(key, value)`.
+
+## Sample application resource
 ```java
 @POST
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public Subject setSubject(@Context ContainerRequestContext requestContext, Subject subject){
-    requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestContext.getSecurityContext().isSecure()));
+public Subject setSubject(@Context ContainerRequestContext requestContext, String subjectName){
+    Subject subject = new Subject(subjectName);
+    requestContext.setSecurityContext(
+      new JwtCookieSecurityContext(
+        new Subject(subjectName),
+        requestContext.getSecurityContext().isSecure()
+      )
+    );
     return subject;
 }
 
@@ -70,6 +97,13 @@ public Subject getSubject(@Auth Subject subject){
 public Subject getSubjectWithoutRefreshingSession(@Auth Subject subject){
     return subject;
 }
+
+@GET
+@Path("restricted")
+@RolesAllowed("admin")
+public String getRestrisctedResource(){
+    return "SuperSecretStuff";
+}
 ```
 
 ## JWT Signing Key
@@ -82,3 +116,7 @@ Alternatively you can specify your own key factory:
 ```java
 bootstrap.addBundle(new JwtCookieAuthBundle<>(MyApplicationConfiguration::getJwtCookieAuth).setKeyFactory((configuration, environment) -> {/*return your own key*/}));
 ```
+
+## Javadoc
+
+It's [here](http://dhatim.github.io/dropwizard-jwt-cookie-authentication).
