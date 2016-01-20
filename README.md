@@ -13,7 +13,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
   ```
 
@@ -64,7 +64,7 @@ Each time an API endpoint is called, a fresh cookie JWT is issued to reset the s
 
 To specify a max age in the cookie (aka "remember me"), use `Subject.setLongTermToken(true)`.
 
-Subject roles can be specified via the `Subject.setRoles` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
+Subject roles can be specified via the `Subject.setRoles(...)` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
 
 Additional custom data can be stored in the Subject using `Subject.getClaims().put(key, value)`.
 
