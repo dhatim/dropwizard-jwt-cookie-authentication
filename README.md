@@ -5,6 +5,18 @@ Saving session information in JWT cookies allows your server to remain stateless
 
 ## Enabling the bundle
 
+### Add the dropwizard-jwt-cookie-authentication dpendency
+
+Add the dropwizard-jwt-cookie-authentication library as a dependency to your `pom.xml` file:
+
+```xml
+<dependency>
+    <groupId>org.dhatim</groupId>
+    <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+  ```
+
 ### Edit you app's Dropwizard YAML config file (not required, default values are shown below)
 
 ```yml
@@ -15,7 +27,7 @@ jwtCookieAuth:
   sessionExpiryPersistent: P7d
 ```
 
-### Add the 'JwtCookieAuthConfiguration' to your application configuration class (`MyApplicationConfiguration`):
+### Add the 'JwtCookieAuthConfiguration' to your application configuration class:
 ```java
 @Valid
 @NotNull
@@ -104,3 +116,7 @@ Alternatively you can specify your own key factory:
 ```java
 bootstrap.addBundle(new JwtCookieAuthBundle<>(MyApplicationConfiguration::getJwtCookieAuth).setKeyFactory((configuration, environment) -> {/*return your own key*/}));
 ```
+
+## Javadoc
+
+It's [here](http://dhatim.github.io/dropwizard-jwt-cookie-authentication).
