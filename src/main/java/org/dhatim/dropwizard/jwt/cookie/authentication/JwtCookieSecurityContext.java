@@ -18,12 +18,15 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 import java.security.Principal;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * Security context set after a JWT cookie authentication
+ */
 public class JwtCookieSecurityContext implements SecurityContext{
 
-    private final Subject subject;
+    private final JwtCookiePrincipal subject;
     private final boolean secure;
 
-    public JwtCookieSecurityContext(Subject subject, boolean secure) {
+    public JwtCookieSecurityContext(JwtCookiePrincipal subject, boolean secure) {
         this.subject = subject;
         this.secure = secure;
     }

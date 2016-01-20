@@ -22,6 +22,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.auth.Authorizer;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -38,41 +39,78 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+/**
+ * Dopwizard bundle
+ * @param <C> Your application configuration class
+ * @param <P> the class of the principal that will be serialized in / deserialized from JWT cookies
+ */
+public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePrincipal> implements ConfiguredBundle<C>{
 
-public class JwtCookieAuthBundle<T extends Configuration> implements ConfiguredBundle<T>{
+    private final Class<P> principalType;
+    private final Function<P,Claims> serializer;
+    private final Function<Claims, P> deserializer;
+    private Function<C, JwtCookieAuthConfiguration> configurationSupplier;
+    private BiFunction<C, Environment, Key> keySuppplier;
 
-    private final Function<T, JwtCookieAuthConfiguration> jwtCookieAuthConfigurationExtractor;
-    private Function<Claims, Subject> subjectFactory;
-    private BiFunction<T, Environment, Key> keyFactory;
-
-    public JwtCookieAuthBundle(Function<T, JwtCookieAuthConfiguration> jwtCookieAuthConfigurationExtractor) {
-        this.jwtCookieAuthConfigurationExtractor = jwtCookieAuthConfigurationExtractor;
-        this.subjectFactory = Subject::new;
+    /**
+     * Get a bundle instance that will use DefaultJwtCookiePrincipal
+     * @param <C> Your application configuration class
+     * @return a bundle instance that will use DefaultJwtCookiePrincipal
+     */
+    public static <C extends Configuration> JwtCookieAuthBundle<C, DefaultJwtCookiePrincipal> getDefault(){
+        return new JwtCookieAuthBundle<>(
+                DefaultJwtCookiePrincipal.class,
+                DefaultJwtCookiePrincipal::getClaims,
+                DefaultJwtCookiePrincipal::new);
+    }
+    
+    /**
+     * Build a new instance of JwtCookieAuthBundle
+     * @param principalType the class of the principal that will be serialized in / deserialized from JWT cookies
+     * @param serializer a function to serialize principals into JWT claims
+     * @param deserializer a function to deserialize JWT claims into principals
+     */
+    public JwtCookieAuthBundle(Class<P> principalType, Function<P,Claims> serializer, Function<Claims, P> deserializer) {
+        this.principalType = principalType;
+        this.serializer = serializer;
+        this.deserializer = deserializer;
+        this.configurationSupplier = c -> new JwtCookieAuthConfiguration();
     }
 
-    public JwtCookieAuthBundle<T> setSubjectFactory(Function<Claims, Subject> subjectFactory){
-        this.subjectFactory = subjectFactory;
+    /**
+     * If you want to sign the JWT with your own key, specify it here
+     * @param keySupplier a bi-function which will return the signing key from the configuration and environment
+     * @return this
+     */
+    public JwtCookieAuthBundle<C, P> withKeyProvider(BiFunction<C, Environment, Key> keySupplier){
+        this.keySuppplier = keySupplier;
+        return this;
+    }
+
+    /**
+     * If you need to configure the bundle, specify it here
+     * @param configurationSupplier a bi-function which will return the bundle configuration from the application configuration
+     * @return this
+     */
+    public JwtCookieAuthBundle<C, P> withConfigurationSupplier(Function<C, JwtCookieAuthConfiguration> configurationSupplier) {
+        this.configurationSupplier = configurationSupplier;
         return this;
     }
     
-    public JwtCookieAuthBundle<T> setKeyFactory(BiFunction<T, Environment, Key> keyFactory){
-        this.keyFactory = keyFactory;
-        return this;
-    }
-
+    
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
-        //in case somebody needs to serialize a Subject
+        //in case somebody needs to serialize a DefaultJwtCookiePrincipal
         bootstrap.getObjectMapper().registerModule(new SimpleModule().addAbstractTypeMapping(Claims.class, DefaultClaims.class));
     }
     
     @Override
-    public void run(T configuration, Environment environment) throws Exception {
-        JwtCookieAuthConfiguration conf = jwtCookieAuthConfigurationExtractor.apply(configuration);
+    public void run(C configuration, Environment environment) throws Exception {
+        JwtCookieAuthConfiguration conf = configurationSupplier.apply(configuration);
         
         //build the key from the key factory if it was provided
         Key key = Optional
-                .ofNullable(keyFactory)
+                .ofNullable(keySuppplier)
                 .map(k -> k.apply(configuration, environment))
                 .orElseGet(() -> 
                     //else make a key from the seed if it was provided
@@ -89,13 +127,15 @@ public class JwtCookieAuthBundle<T extends Configuration> implements ConfiguredB
         jerseyEnvironment.register(new AuthDynamicFeature(
                 new JwtCookieAuthRequestFilter.Builder()
                 .setCookieName(cookieName)
-                .setAuthenticator(new SubjectAuthenticator(key, subjectFactory))
-                .setAuthorizer(Subject::hasRole)
+                .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
+                .setAuthorizer((Authorizer<P>)(P::hasRole))
                 .buildAuthFilter()));
-        jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(Subject.class));
+        jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
         jerseyEnvironment.register(RolesAllowedDynamicFeature.class);
         
-        jerseyEnvironment.register(new JwtCookieAuthResponseFilter(
+        jerseyEnvironment.register(new JwtCookieAuthResponseFilter<>(
+                principalType,
+                serializer,
                 cookieName,
                 conf.isHttpsOnlyCookie(),
                 key,

@@ -17,6 +17,9 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+/**
+ * Bundle configuration class
+ */
 public class JwtCookieAuthConfiguration {
     
     private String secretSeed;
@@ -29,18 +32,35 @@ public class JwtCookieAuthConfiguration {
     @NotEmpty
     private String sessionExpiryPersistent = "P7d";
 
+    /**
+     * The secret seed use to generate the signing key.
+     * It can be used to keep the same key value across application reboots.
+     * @return the signing key seed
+     */
     public String getSecretSeed() {
         return secretSeed;
     }
 
+    /**
+     * Indicates if the 'secure' flag must be set on cookies
+     * @return if the 'secure' flag must be set on cookies
+     */
     public boolean isHttpsOnlyCookie() {
         return httpsOnlyCookie;
     }
 
+    /**
+     * duration of volatile cookies (in ISO 8601 format)
+     * @return the duration of volatile cookies
+     */
     public String getSessionExpiryVolatile() {
         return sessionExpiryVolatile;
     }
 
+    /**
+     * duration of persistent cookies (in ISO 8601 format)
+     * @return the duration of persistent cookies
+     */
     public String getSessionExpiryPersistent() {
         return sessionExpiryPersistent;
     }

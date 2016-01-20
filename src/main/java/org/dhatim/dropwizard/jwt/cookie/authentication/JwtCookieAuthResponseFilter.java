@@ -24,15 +24,18 @@ import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.function.Function;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 
-class JwtCookieAuthResponseFilter implements ContainerResponseFilter {
+class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements ContainerResponseFilter {
 
     private static final String COOKIE_TEMPLATE_INSECURE = "=%s; Path=/;";
     private static final String COOKIE_TEMPLATE_SECURE = COOKIE_TEMPLATE_INSECURE + " secure";
 
+    private final Class<P> principalType;
+    private final Function<P, Claims> serializer;
     private final String sessionCookieFormat;
     private final String persistentCookieFormat;
 
@@ -40,12 +43,17 @@ class JwtCookieAuthResponseFilter implements ContainerResponseFilter {
     private final int volatileSessionDuration; //in seconds
     private final int persistentSessionDuration;
 
-    public JwtCookieAuthResponseFilter(String cookieName,
+    public JwtCookieAuthResponseFilter(
+            Class<P> principalType,
+            Function<P, Claims> serializer,
+            String cookieName,
             boolean httpsOnly,
             Key signingKey,
             int volatileSessionDuration,
             int persistentSessionDuration) {
 
+        this.principalType = principalType;
+        this.serializer = serializer;
         this.sessionCookieFormat = cookieName
                 + (httpsOnly
                         ? COOKIE_TEMPLATE_SECURE
@@ -60,11 +68,10 @@ class JwtCookieAuthResponseFilter implements ContainerResponseFilter {
     public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
         Principal principal = request.getSecurityContext().getUserPrincipal();
 
-        if (principal instanceof Subject && request.getProperty(DontRefreshSessionFilter.DONT_REFRESH_SESSION_PROPERTY) != Boolean.TRUE) {
+        if (principalType.isInstance(principal) && request.getProperty(DontRefreshSessionFilter.DONT_REFRESH_SESSION_PROPERTY) != Boolean.TRUE) {
 
-            Subject subject = (Subject) principal;
-            Claims claims = subject.getClaims();
-            String cookie = subject.isLongTermToken()
+            P subject = (P) principal;
+            String cookie = subject.isPersistent()
                     ? String.format(persistentCookieFormat, getJwt(subject, persistentSessionDuration), persistentSessionDuration)
                     : String.format(sessionCookieFormat, getJwt(subject, volatileSessionDuration));
 
@@ -73,10 +80,10 @@ class JwtCookieAuthResponseFilter implements ContainerResponseFilter {
 
     }
 
-    private String getJwt(Subject subject, int expiresIn) {
+    private String getJwt(P subject, int expiresIn) {
         return Jwts.builder()
                 .signWith(SignatureAlgorithm.HS256, signingKey)
-                .setClaims(subject.getClaims())
+                .setClaims(serializer.apply(subject))
                 .setExpiration(Date.from(Instant.now().plus(expiresIn, ChronoUnit.SECONDS)))
                 .compact();
     }

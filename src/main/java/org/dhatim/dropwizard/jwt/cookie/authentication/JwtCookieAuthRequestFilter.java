@@ -28,7 +28,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Cookie;
 
 @Priority(Priorities.AUTHENTICATION)
-class JwtCookieAuthRequestFilter extends AuthFilter<String, Subject> {
+class JwtCookieAuthRequestFilter<P extends JwtCookiePrincipal> extends AuthFilter<String, P> {
 
     private final String cookieName;
 
@@ -38,12 +38,11 @@ class JwtCookieAuthRequestFilter extends AuthFilter<String, Subject> {
 
     @Override
     public void filter(ContainerRequestContext crc) throws IOException {
-
         Cookie cookie = crc.getCookies().get(cookieName);
         if (null != cookie) {
             String accessToken = cookie.getValue();
             try {
-                final Optional<Subject> subject = authenticator.authenticate(accessToken);
+                final Optional<P> subject = authenticator.authenticate(accessToken);
                 if (subject.isPresent()) {
                     crc.setSecurityContext(new JwtCookieSecurityContext(subject.get(), crc.getSecurityContext().isSecure()));
                     return;
@@ -55,7 +54,7 @@ class JwtCookieAuthRequestFilter extends AuthFilter<String, Subject> {
         throw new WebApplicationException(unauthorizedHandler.buildResponse(prefix, realm));
     }
 
-    public static class Builder extends AuthFilterBuilder<String, Subject, JwtCookieAuthRequestFilter> {
+    public static class Builder<P extends JwtCookiePrincipal> extends AuthFilterBuilder<String, P, JwtCookieAuthRequestFilter<P>> {
 
         private String cookieName;
 
@@ -65,7 +64,7 @@ class JwtCookieAuthRequestFilter extends AuthFilter<String, Subject> {
         }
 
         @Override
-        protected JwtCookieAuthRequestFilter newInstance() {
+        protected  JwtCookieAuthRequestFilter<P> newInstance() {
             return new JwtCookieAuthRequestFilter(Objects.requireNonNull(cookieName, "cookieName is not set"));
         }
     }
