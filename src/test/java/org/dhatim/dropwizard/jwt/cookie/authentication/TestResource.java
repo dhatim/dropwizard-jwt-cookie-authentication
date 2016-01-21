@@ -26,29 +26,29 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-@Path("subject")
+@Path("principal")
 public class TestResource {
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public DefaultJwtCookiePrincipal setSubject(@Context ContainerRequestContext requestContext, DefaultJwtCookiePrincipal subject){
-        requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestContext.getSecurityContext().isSecure()));
-        return subject;
+    public DefaultJwtCookiePrincipal setPrincipal(@Context ContainerRequestContext requestContext, DefaultJwtCookiePrincipal principal){
+        requestContext.setSecurityContext(new JwtCookieSecurityContext(principal, requestContext.getSecurityContext().isSecure()));
+        return principal;
     }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public DefaultJwtCookiePrincipal getSubject(@Auth DefaultJwtCookiePrincipal subject){
-        return subject;
+    public DefaultJwtCookiePrincipal getPrincipal(@Auth DefaultJwtCookiePrincipal principal){
+        return principal;
     }
     
     @GET
     @Path("idempotent")
     @Produces(MediaType.APPLICATION_JSON)
     @DontRefreshSession
-    public DefaultJwtCookiePrincipal getSubjectWithoutRefreshingSession(@Auth DefaultJwtCookiePrincipal subject){
-        return subject;
+    public DefaultJwtCookiePrincipal getPrincipalWithoutRefreshingSession(@Auth DefaultJwtCookiePrincipal principal){
+        return principal;
     }
     
     @GET
