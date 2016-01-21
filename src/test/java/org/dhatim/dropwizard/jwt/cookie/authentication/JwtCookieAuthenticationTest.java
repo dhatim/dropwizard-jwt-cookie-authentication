@@ -15,7 +15,6 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import io.jsonwebtoken.Jwts;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,7 +36,7 @@ public class JwtCookieAuthenticationTest {
     @ClassRule
     public static final TestApplicationRule applicationRule = new TestApplicationRule();
 
-    private final WebTarget target = ClientBuilder.newClient().target(applicationRule.baseUri()).path("subject");
+    private final WebTarget target = ClientBuilder.newClient().target(applicationRule.baseUri()).path("principal");
 
     @Test
     public void testUnauthorized() {
@@ -48,12 +47,12 @@ public class JwtCookieAuthenticationTest {
 
     @Test
     public void testCookieRefresh() throws IOException {
-        String subjectName = UUID.randomUUID().toString();
-        //a POST will set the subject
-        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(subjectName)));
+        String principalName = UUID.randomUUID().toString();
+        //a POST will set the principal
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
         Assert.assertEquals(200, response.getStatus());
-        DefaultJwtCookiePrincipal subject = getSubject(response);
-        Assert.assertEquals(subjectName, subject.getName());
+        DefaultJwtCookiePrincipal principal = getPrincipal(response);
+        Assert.assertEquals(principalName, principal.getName());
 
         //check that a session cookie has been set
         NewCookie cookie1 = response.getCookies().get("sessionToken");
@@ -63,8 +62,8 @@ public class JwtCookieAuthenticationTest {
         //a GET with this cookie should send the DefaultJwtCookiePrincipal and refresh the cookie
         response = target.request(MediaType.APPLICATION_JSON).cookie(cookie1).get();
         Assert.assertEquals(200, response.getStatus());
-        subject = getSubject(response);
-        Assert.assertEquals(subjectName, subject.getName());
+        principal = getPrincipal(response);
+        Assert.assertEquals(principalName, principal.getName());
         NewCookie cookie2 = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie2);
         Assert.assertNotSame(cookie1.getValue(), cookie2.getValue());
@@ -72,14 +71,14 @@ public class JwtCookieAuthenticationTest {
         //requests made to methods annotated with @DontRefreshSession should not refresh the cookie
         response = target.path("idempotent").request(MediaType.APPLICATION_JSON).cookie(cookie2).get();
         Assert.assertEquals(200, response.getStatus());
-        subject = getSubject(response);
-        Assert.assertEquals(subjectName, subject.getName());
+        principal = getPrincipal(response);
+        Assert.assertEquals(principalName, principal.getName());
         Assert.assertNull(response.getCookies().get("sessionToken"));
     }
 
     @Test
     public void testRememberMe() {
-        //a volatile subject should not set a volatile cookie
+        //a volatile principal should not set a volatile cookie
         Response response = target.request(MediaType.APPLICATION_JSON).post(
                 Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString(), false, Collections.emptyList())));
         NewCookie cookie = response.getCookies().get("sessionToken");
@@ -87,7 +86,7 @@ public class JwtCookieAuthenticationTest {
         Assert.assertNotNull(cookie);
         Assert.assertEquals(-1, cookie.getMaxAge());
 
-        //a long term subject should set a persistent cookie
+        //a long term principal should set a persistent cookie
         response = target.request(MediaType.APPLICATION_JSON).post(
                 Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString(), true, Collections.emptyList())));
         cookie = response.getCookies().get("sessionToken");
@@ -103,17 +102,17 @@ public class JwtCookieAuthenticationTest {
         Response response = restrictedTarget.request().get();
         Assert.assertEquals(401, response.getStatus());
 
-        //set a subject without the admin role (-> 403 FORBIDDEN)
-        DefaultJwtCookiePrincipal subject = new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
-        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(subject));
+        //set a principal without the admin role (-> 403 FORBIDDEN)
+        DefaultJwtCookiePrincipal principal = new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
+        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         NewCookie cookie = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie);
         response = restrictedTarget.request().cookie(cookie).get();
         Assert.assertEquals(403, response.getStatus());
 
-        //set a subject with the admin role (-> 200 OK)
-        subject.setRoles(Collections.singleton("admin"));
-        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(subject));
+        //set a principal with the admin role (-> 200 OK)
+        principal.setRoles(Collections.singleton("admin"));
+        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         cookie = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie);
         response = restrictedTarget.request().cookie(cookie).get();
@@ -121,7 +120,7 @@ public class JwtCookieAuthenticationTest {
 
     }
 
-    private DefaultJwtCookiePrincipal getSubject(Response response) throws IOException {
+    private DefaultJwtCookiePrincipal getPrincipal(Response response) throws IOException {
         return applicationRule
                 .getSupport()
                 .getObjectMapper()
