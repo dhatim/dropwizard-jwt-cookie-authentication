@@ -79,16 +79,16 @@ public class JwtCookieAuthenticationTest {
     @Test
     public void testRememberMe() {
         //a volatile principal should not set a volatile cookie
-        Response response = target.request(MediaType.APPLICATION_JSON).post(
-                Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString(), false, Collections.emptyList())));
+        DefaultJwtCookiePrincipal principal =  new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         NewCookie cookie = response.getCookies().get("sessionToken");
         //default maxAge is 604800s (7 days)
         Assert.assertNotNull(cookie);
         Assert.assertEquals(-1, cookie.getMaxAge());
 
         //a long term principal should set a persistent cookie
-        response = target.request(MediaType.APPLICATION_JSON).post(
-                Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString(), true, Collections.emptyList())));
+        principal.setPresistent(true);
+        response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         cookie = response.getCookies().get("sessionToken");
         //default maxAge is 604800s (7 days)
         Assert.assertNotNull(cookie);
@@ -117,7 +117,6 @@ public class JwtCookieAuthenticationTest {
         Assert.assertNotNull(cookie);
         response = restrictedTarget.request().cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
-
     }
 
     private DefaultJwtCookiePrincipal getPrincipal(Response response) throws IOException {

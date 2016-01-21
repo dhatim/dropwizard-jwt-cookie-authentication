@@ -38,11 +38,11 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal{
      * @param persistent if the cookie must be persistent
      * @param roles the roles the princiapl is in
      */
-    public DefaultJwtCookiePrincipal(String name, boolean persistent, Collection<String> roles){
-        claims = Jwts.claims();
-        claims.setSubject(name);
-        claims.put(PERSISTENT, persistent);
-        claims.put(ROLES, roles);
+    public DefaultJwtCookiePrincipal(@JsonProperty("name")String name, @JsonProperty("persistent")boolean persistent, @JsonProperty("roles")Collection<String> roles, @JsonProperty("claims")Claims claims){
+        this.claims = Optional.ofNullable(claims).orElseGet(Jwts::claims);
+        this.claims.setSubject(name);
+        this.claims.put(PERSISTENT, persistent);
+        this.claims.put(ROLES, roles);
     }
     
     /**
@@ -50,7 +50,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal{
      * @param name the name
      */
     public DefaultJwtCookiePrincipal(String name){
-        this(name, false, Collections.emptyList());
+        this(name, false, Collections.emptyList(), null);
     }
     
     /**
