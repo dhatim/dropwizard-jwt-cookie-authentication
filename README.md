@@ -17,7 +17,9 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 </dependency>
   ```
 
-### Edit you app's Dropwizard YAML config file (not required, default values are shown below)
+### Edit you app's Dropwizard YAML config file
+
+The default values are shown below. If they suit you, this step is optional.
 
 ```yml
 jwtCookieAuth:
@@ -28,6 +30,9 @@ jwtCookieAuth:
 ```
 
 ### Add the 'JwtCookieAuthConfiguration' to your application configuration class:
+
+This step is also optional if you skipped the previous one.
+
 ```java
 @Valid
 @NotNull
@@ -42,31 +47,38 @@ public JwtCookieAuthConfiguration getJwtCookieAuth() {
 
 ```java
 public void initialize(Bootstrap<MyApplicationConfiguration> bootstrap) {
-  bootstrap.addBundle(new JwtCookieAuthBundle<>(MyApplicationConfiguration::getJwtCookieAuth);
+  bootstrap.addBundle(JwtCookieAuthBundle.getDefault());
 }
+```
+
+If you have a custom configuration fot the bundle, specify it like so:
+```java
+bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withConfigurationSupplier(MyAppConfiguration::getJwtCookieAuth));
 ```
 
 ## Using the bundle
 
-The authentication result is an instance of `Subject` which must be initially put in the security context using `requestContext.setSecurityContext`
+By default, the JWT cookie is serialized from / deserialized in an instance of `DefaultJwtCookiePrincipal`.
+
+When the user authenticate, you must put an instance of `DefaultJwtCookiePrincipal` in the security context using `requestContext.setSecurityContext`
 ```java
 requestContext.setSecurityContext(
   new JwtCookieSecurityContext(
-    new Subject(subjectName),
+    new DefaultJwtCookiePrincipal(subjectName),
     requestContext.getSecurityContext().isSecure()
   )
 );
 ```
 
-Once a subject has been set, it can be retrieved using the `@Auth` annotation in method signatures.
+Once a principal has been set, it can be retrieved using the `@Auth` annotation in method signatures.
 
 Each time an API endpoint is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` on methods where this behavior is unwanted.
 
-To specify a max age in the cookie (aka "remember me"), use `Subject.setLongTermToken(true)`.
+To specify a max age in the cookie (aka "remember me"), use `DefaultJwtCookiePrincipal.setPresistent(true)`.
 
-Subject roles can be specified via the `Subject.setRoles(...)` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
+Principal roles can be specified via the `DefaultJwtCookiePrincipal.setRoles(...)` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
 
-Additional custom data can be stored in the Subject using `Subject.getClaims().put(key, value)`.
+Additional custom data can be stored in the Principal using `DefaultJwtCookiePrincipal.getClaims().put(key, value)`.
 
 ## Sample application resource
 ```java
@@ -104,6 +116,16 @@ public Subject getSubjectWithoutRefreshingSession(@Auth Subject subject){
 public String getRestrisctedResource(){
     return "SuperSecretStuff";
 }
+```
+
+## Custom principal implementation
+
+If you want to use your own Principal class instead of the `DefaultJwtCookiePrincipal`, simply implement the interface `JwtCookiePrincipal` and pass it to the bundle constructor along with functions to serialize it into / deserialize it from JWT claims.
+
+e.g:
+
+```java
+bootstrap.addBundle(new JwtCookieAuthBundle<>(MuCustomPrincipal.class, MuCustomPrincipal::toClaims, MuCustomPrincipal::new));
 ```
 
 ## JWT Signing Key
