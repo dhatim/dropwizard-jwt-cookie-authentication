@@ -32,14 +32,14 @@ public class TestResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Subject setSubject(@Context ContainerRequestContext requestContext, Subject subject){
+    public DefaultJwtCookiePrincipal setSubject(@Context ContainerRequestContext requestContext, DefaultJwtCookiePrincipal subject){
         requestContext.setSecurityContext(new JwtCookieSecurityContext(subject, requestContext.getSecurityContext().isSecure()));
         return subject;
     }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Subject getSubject(@Auth Subject subject){
+    public DefaultJwtCookiePrincipal getSubject(@Auth DefaultJwtCookiePrincipal subject){
         return subject;
     }
     
@@ -47,14 +47,14 @@ public class TestResource {
     @Path("idempotent")
     @Produces(MediaType.APPLICATION_JSON)
     @DontRefreshSession
-    public Subject getSubjectWithoutRefreshingSession(@Auth Subject subject){
+    public DefaultJwtCookiePrincipal getSubjectWithoutRefreshingSession(@Auth DefaultJwtCookiePrincipal subject){
         return subject;
     }
     
     @GET
     @Path("restricted")
     @RolesAllowed("admin")
-    public String getRestrisctedResource(){
+    public String getRestrictedResource(){
         return "SuperSecretStuff";
     }
     

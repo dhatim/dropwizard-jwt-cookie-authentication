@@ -64,7 +64,7 @@ public class TestApplicationRule extends ExternalResource {
 
         @Override
         public void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(new JwtCookieAuthBundle<>(c -> new JwtCookieAuthConfiguration()));
+            bootstrap.addBundle(JwtCookieAuthBundle.getDefault());
         }
 
         @Override
