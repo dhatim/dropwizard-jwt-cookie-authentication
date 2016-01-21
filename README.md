@@ -5,7 +5,7 @@ Saving session information in JWT cookies allows your server to remain stateless
 
 ## Enabling the bundle
 
-### Add the dropwizard-jwt-cookie-authentication dpendency
+### Add the dropwizard-jwt-cookie-authentication dependency
 
 Add the dropwizard-jwt-cookie-authentication library as a dependency to your `pom.xml` file:
 
