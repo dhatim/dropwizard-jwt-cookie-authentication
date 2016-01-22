@@ -127,7 +127,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         jerseyEnvironment.register(new AuthDynamicFeature(
                 new JwtCookieAuthRequestFilter.Builder()
                 .setCookieName(cookieName)
-                .setPrefix("jwtCookie")
+                .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
                 .setAuthorizer((Authorizer<P>)(P::isInRole))
                 .buildAuthFilter()));
         jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
