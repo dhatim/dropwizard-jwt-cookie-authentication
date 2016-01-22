@@ -76,6 +76,8 @@ Each time an API endpoint is called, a fresh cookie JWT is issued to reset the s
 
 To specify a max age in the cookie (aka "remember me"), use `DefaultJwtCookiePrincipal.setPresistent(true)`.
 
+It is a stateless auhtentication method, so there is no real other way to invalidate a session than waiting for the JWT to expire. However calling `JwtCookiePrincipal.removeFromContext(requestContext)` will make the browser discard the cookie by setting the cookie expiration to a past date.
+
 Principal roles can be specified via the `DefaultJwtCookiePrincipal.setRoles(...)` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
 
 Additional custom data can be stored in the Principal using `DefaultJwtCookiePrincipal.getClaims().put(key, value)`.
@@ -85,20 +87,20 @@ Additional custom data can be stored in the Principal using `DefaultJwtCookiePri
 @POST
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public Subject setSubject(@Context ContainerRequestContext requestContext, String subjectName){
-    Subject subject = new Subject(subjectName);
-    requestContext.setSecurityContext(
-      new JwtCookieSecurityContext(
-        new Subject(subjectName),
-        requestContext.getSecurityContext().isSecure()
-      )
-    );
-    return subject;
+public DefaultJwtCookiePrincipal login(@Context ContainerRequestContext requestContext, String name){
+    DefaultJwtCookiePrincipal principal = new DefaultJwtCookiePrincipal(name);
+    principal.addInContext(requestContext);
+    return principal;
+}
+
+@GET
+public DefaultJwtCookiePrincipal logout(@Context ContainerRequestContext requestContext){
+    JwtCookiePrincipal.removeFromContext(requestContext);
 }
 
 @GET
 @Produces(MediaType.APPLICATION_JSON)
-public Subject getSubject(@Auth Subject subject){
+public Subject getPrincipal(@Auth DefaultJwtCookiePrincipal principal){
     return subject;
 }
 
@@ -106,8 +108,8 @@ public Subject getSubject(@Auth Subject subject){
 @Path("idempotent")
 @Produces(MediaType.APPLICATION_JSON)
 @DontRefreshSession
-public Subject getSubjectWithoutRefreshingSession(@Auth Subject subject){
-    return subject;
+public DefaultJwtCookiePrincipal getSubjectWithoutRefreshingSession(@Auth DefaultJwtCookiePrincipal principal){
+    return principal;
 }
 
 @GET
