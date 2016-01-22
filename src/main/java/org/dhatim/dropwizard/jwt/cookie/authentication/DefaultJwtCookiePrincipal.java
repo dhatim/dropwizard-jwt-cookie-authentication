@@ -36,7 +36,8 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal{
      * Builds a new instance of DefaultJwtCookiePrincipal
      * @param name the principal name
      * @param persistent if the cookie must be persistent
-     * @param roles the roles the princiapl is in
+     * @param roles the roles the principal is in
+     * @param claims custom data associated with the principal
      */
     public DefaultJwtCookiePrincipal(@JsonProperty("name")String name, @JsonProperty("persistent")boolean persistent, @JsonProperty("roles")Collection<String> roles, @JsonProperty("claims")Claims claims){
         this.claims = Optional.ofNullable(claims).orElseGet(Jwts::claims);
@@ -75,7 +76,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal{
     * @return true if the principal is in the given role, false otherwise
     */
     @Override
-    public boolean hasRole(String role){
+    public boolean isInRole(String role){
         return getRoles().contains(role);
     }
     

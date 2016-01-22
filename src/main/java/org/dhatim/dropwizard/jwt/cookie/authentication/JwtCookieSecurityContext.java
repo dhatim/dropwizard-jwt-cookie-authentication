@@ -16,12 +16,13 @@
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import java.security.Principal;
+import java.util.Optional;
 import javax.ws.rs.core.SecurityContext;
 
 /**
  * Security context set after a JWT cookie authentication
  */
-public class JwtCookieSecurityContext implements SecurityContext{
+class JwtCookieSecurityContext implements SecurityContext{
 
     private final JwtCookiePrincipal subject;
     private final boolean secure;
@@ -38,7 +39,9 @@ public class JwtCookieSecurityContext implements SecurityContext{
 
     @Override
     public boolean isUserInRole(String role) {
-        return subject.hasRole(role);
+        return Optional.ofNullable(subject)
+                .map(s -> s.isInRole(role))
+                .orElse(false);
     }
 
     @Override

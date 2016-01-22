@@ -33,8 +33,14 @@ public class TestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public DefaultJwtCookiePrincipal setPrincipal(@Context ContainerRequestContext requestContext, DefaultJwtCookiePrincipal principal){
-        requestContext.setSecurityContext(new JwtCookieSecurityContext(principal, requestContext.getSecurityContext().isSecure()));
+        principal.addInContext(requestContext);
         return principal;
+    }
+    
+    @GET
+    @Path("unset")
+    public void unsetPrincipal(@Context ContainerRequestContext context){
+        JwtCookiePrincipal.removeFromContext(context);
     }
     
     @GET

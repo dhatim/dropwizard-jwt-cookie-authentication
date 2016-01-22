@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.Date;
 import java.util.UUID;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -46,7 +48,7 @@ public class JwtCookieAuthenticationTest {
     }
 
     @Test
-    public void testCookieRefresh() throws IOException {
+    public void testCookieSetting() throws IOException {
         String principalName = UUID.randomUUID().toString();
         //a POST will set the principal
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
@@ -117,6 +119,21 @@ public class JwtCookieAuthenticationTest {
         Assert.assertNotNull(cookie);
         response = restrictedTarget.request().cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
+    }
+   
+    @Test
+    public void testDeleteCookie() {
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString())));
+        NewCookie cookie = response.getCookies().get("sessionToken");
+        Assert.assertNotNull(cookie);
+        
+        //removing the principal should produce a cookie with empty contenant and a past expiration date
+        response = target.path("unset").request().cookie(cookie).get();
+        Assert.assertEquals(204, response.getStatus());
+        cookie = response.getCookies().get("sessionToken");
+        Assert.assertNotNull(cookie);
+        Assert.assertEquals("", cookie.getValue());
+        Assert.assertEquals(Date.from(Instant.EPOCH), cookie.getExpiry());
     }
 
     private DefaultJwtCookiePrincipal getPrincipal(Response response) throws IOException {
