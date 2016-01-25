@@ -33,7 +33,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
 
     private static final String COOKIE_TEMPLATE_INSECURE = "=%s; Path=/;";
     private static final String COOKIE_TEMPLATE_SECURE = COOKIE_TEMPLATE_INSECURE + " secure";
-    private static final String DELETE_COOKIE_TEMPLATE = "=; expires=Thu, 01-Jan-70 00:00:00 GMT";
+    private static final String DELETE_COOKIE_TEMPLATE = "=; Path=/; expires=Thu, 01-Jan-70 00:00:00 GMT";
 
     private final Class<P> principalType;
     private final Function<P, Claims> serializer;
