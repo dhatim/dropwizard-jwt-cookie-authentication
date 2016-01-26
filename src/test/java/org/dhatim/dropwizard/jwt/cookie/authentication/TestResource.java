@@ -64,4 +64,9 @@ public class TestResource {
         return "SuperSecretStuff";
     }
     
+    @GET
+    @Path("public")
+    public String getPublicResource(){
+        return "PublicStuff";
+    }
 }

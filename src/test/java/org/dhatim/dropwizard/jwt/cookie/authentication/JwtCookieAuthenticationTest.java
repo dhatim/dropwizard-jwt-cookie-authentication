@@ -15,6 +15,7 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import io.jsonwebtoken.lang.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -59,22 +60,41 @@ public class JwtCookieAuthenticationTest {
         //check that a session cookie has been set
         NewCookie cookie1 = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie1);
-        Assert.assertEquals(-1, cookie1.getMaxAge());
+        Assert.assertTrue(Strings.hasText(cookie1.getValue()));
 
-        //a GET with this cookie should send the DefaultJwtCookiePrincipal and refresh the cookie
+        //a GET with this cookie should return the Principal and refresh the cookie
         response = target.request(MediaType.APPLICATION_JSON).cookie(cookie1).get();
         Assert.assertEquals(200, response.getStatus());
         principal = getPrincipal(response);
         Assert.assertEquals(principalName, principal.getName());
         NewCookie cookie2 = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie2);
+        Assert.assertTrue(Strings.hasText(cookie1.getValue()));
         Assert.assertNotSame(cookie1.getValue(), cookie2.getValue());
-
-        //requests made to methods annotated with @DontRefreshSession should not refresh the cookie
-        response = target.path("idempotent").request(MediaType.APPLICATION_JSON).cookie(cookie2).get();
+    }
+    
+    @Test
+    public void testDontRefreshSession() throws IOException{
+        //requests made to methods annotated with @DontRefreshSession should not modify the cookie
+        String principalName = UUID.randomUUID().toString();
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
+        NewCookie cookie = response.getCookies().get("sessionToken");
+        
+        response = target.path("idempotent").request(MediaType.APPLICATION_JSON).cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
-        principal = getPrincipal(response);
-        Assert.assertEquals(principalName, principal.getName());
+        Assert.assertEquals(principalName, getPrincipal(response).getName());
+        Assert.assertNull(response.getCookies().get("sessionToken"));
+    }
+    
+    @Test
+    public void testPublicEndpoint(){
+        //public endpoints (i.e. no with @Auth, @RolesAllowed etc.) should not modify the cookie
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString())));
+        NewCookie cookie = response.getCookies().get("sessionToken");
+        
+        //request made to public methods should not refresh the cookie
+        response = target.path("public").request(MediaType.APPLICATION_JSON).cookie(cookie).get();
+        Assert.assertEquals(200, response.getStatus());
         Assert.assertNull(response.getCookies().get("sessionToken"));
     }
 

@@ -63,7 +63,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
                         ? COOKIE_TEMPLATE_SECURE
                         : COOKIE_TEMPLATE_INSECURE);
         this.persistentCookieFormat = sessionCookieFormat + " Max-Age=%d;";
-        this.deleteCookie=cookieName+DELETE_COOKIE_TEMPLATE;
+        this.deleteCookie = cookieName + DELETE_COOKIE_TEMPLATE;
         this.signingKey = signingKey;
         this.volatileSessionDuration = volatileSessionDuration;
         this.persistentSessionDuration = persistentSessionDuration;
@@ -72,20 +72,21 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
         Principal principal = request.getSecurityContext().getUserPrincipal();
-        if (principalType.isInstance(principal)) {
-            if (request.getProperty(DontRefreshSessionFilter.DONT_REFRESH_SESSION_PROPERTY) != Boolean.TRUE) {
-                P cookiePrincipal = (P) principal;
-                String cookie = cookiePrincipal.isPersistent()
-                        ? String.format(persistentCookieFormat, getJwt(cookiePrincipal, persistentSessionDuration), persistentSessionDuration)
-                        : String.format(sessionCookieFormat, getJwt(cookiePrincipal, volatileSessionDuration));
+        if (request.getSecurityContext() instanceof JwtCookieSecurityContext) {
+            if (principalType.isInstance(principal)) {
+                if (request.getProperty(DontRefreshSessionFilter.DONT_REFRESH_SESSION_PROPERTY) != Boolean.TRUE) {
+                    P cookiePrincipal = (P) principal;
+                    String cookie = cookiePrincipal.isPersistent()
+                            ? String.format(persistentCookieFormat, getJwt(cookiePrincipal, persistentSessionDuration), persistentSessionDuration)
+                            : String.format(sessionCookieFormat, getJwt(cookiePrincipal, volatileSessionDuration));
 
-                response.getHeaders().add("Set-Cookie", cookie);
+                    response.getHeaders().add("Set-Cookie", cookie);
+                }
+            } else if (request.getCookies().containsKey(cookieName)) {
+                //the principal has been unset during the response, delete the cookie
+                response.getHeaders().add("Set-Cookie", deleteCookie);
             }
-        } else if(request.getCookies().containsKey(cookieName)){
-            //the principal has been unset during the response, delete the cookie
-            response.getHeaders().add("Set-Cookie", deleteCookie);
         }
-
     }
 
     private String getJwt(P subject, int expiresIn) {
