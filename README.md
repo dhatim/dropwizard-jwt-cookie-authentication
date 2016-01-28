@@ -60,7 +60,7 @@ bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withConfigurationSupplier(M
 
 By default, the JWT cookie is serialized from / deserialized in an instance of `DefaultJwtCookiePrincipal`.
 
-When the user authenticate, you must put an instance of `DefaultJwtCookiePrincipal` in the security (which you can inject in your resources using the `@Context` annotation) context using `JwtCookiePrincipal.addInContext`
+When the user authenticate, you must put an instance of `DefaultJwtCookiePrincipal` in the security context (which you can inject in your resources using the `@Context` annotation) using `JwtCookiePrincipal.addInContext`
 ```java
 JwtCookiePrincipal principal = new DefaultJwtCookiePrincipal(name);
 principal.addInContext(context);
