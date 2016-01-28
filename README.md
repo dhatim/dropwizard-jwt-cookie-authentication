@@ -60,14 +60,10 @@ bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withConfigurationSupplier(M
 
 By default, the JWT cookie is serialized from / deserialized in an instance of `DefaultJwtCookiePrincipal`.
 
-When the user authenticate, you must put an instance of `DefaultJwtCookiePrincipal` in the security context using `requestContext.setSecurityContext`
+When the user authenticate, you must put an instance of `DefaultJwtCookiePrincipal` in the security (which you can inject in your resources using the `@Context` annotation) context using `JwtCookiePrincipal.addInContext`
 ```java
-requestContext.setSecurityContext(
-  new JwtCookieSecurityContext(
-    new DefaultJwtCookiePrincipal(subjectName),
-    requestContext.getSecurityContext().isSecure()
-  )
-);
+JwtCookiePrincipal principal = new DefaultJwtCookiePrincipal(name);
+principal.addInContext(context);
 ```
 
 Once a principal has been set, it can be retrieved using the `@Auth` annotation in method signatures.
@@ -76,7 +72,7 @@ Each time an API endpoint is called, a fresh cookie JWT is issued to reset the s
 
 To specify a max age in the cookie (aka "remember me"), use `DefaultJwtCookiePrincipal.setPresistent(true)`.
 
-It is a stateless auhtentication method, so there is no real other way to invalidate a session than waiting for the JWT to expire. However calling `JwtCookiePrincipal.removeFromContext(requestContext)` will make the browser discard the cookie by setting the cookie expiration to a past date.
+It is a stateless auhtentication method, so there is no real way to invalidate a session other than waiting for the JWT to expire. However calling `JwtCookiePrincipal.removeFromContext(context)` will make browsers discard the cookie by setting the cookie expiration to a past date.
 
 Principal roles can be specified via the `DefaultJwtCookiePrincipal.setRoles(...)` method. You can then define fine grained access control using annotations such as `@RolesAllowed` or `@PermitAll`.
 
@@ -132,7 +128,7 @@ bootstrap.addBundle(new JwtCookieAuthBundle<>(MyCustomPrincipal.class, MyCustomP
 
 ## JWT Signing Key
 
-By default, the signing key is randomly generated on application startup. It means that users will have to re-authenticate after each reboot.
+By default, the signing key is randomly generated on application startup. It means that users will have to re-authenticate after each server reboot.
 
 To avoid this, you can specify a `secretSeed` in the configuration. This seed will be used to generate the signing key, which will therefore be the same at each application startup.
 
