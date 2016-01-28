@@ -127,7 +127,7 @@ If you want to use your own Principal class instead of the `DefaultJwtCookiePrin
 e.g:
 
 ```java
-bootstrap.addBundle(new JwtCookieAuthBundle<>(MuCustomPrincipal.class, MuCustomPrincipal::toClaims, MuCustomPrincipal::new));
+bootstrap.addBundle(new JwtCookieAuthBundle<>(MyCustomPrincipal.class, MyCustomPrincipal::toClaims, MyCustomPrincipal::new));
 ```
 
 ## JWT Signing Key
