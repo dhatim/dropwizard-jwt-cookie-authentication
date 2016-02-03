@@ -1,7 +1,12 @@
 # dropwizard-jwt-cookie-authentication
-Dropwizard bundle managing authentication through JWT cookies.
 
-Saving session information in JWT cookies allows your server to remain stateless, which comes with a lot of advantages regarding scalability and memory usage.
+Stalessness is not only an architectural constaint of RESTful applications, it also comes with a lot of advantages regarding scalability and memory usage.
+
+A common pattern is to give the client a signed JWT containing all necessary authorization and/or session state information. This JWT must then be passed along subsequent requests, usually in bearer Authorization HTTP headers.
+
+However, if the particular case where clients of the RESTful application are web applications, it is much more interesting to use cookies. The browser will automatically read, store, send and expire the tokens, saving front-end developers the hassle of doing it themselves.
+
+Hopefully this dropwizard bundle will also make things simple for back-end developpers. It automatically serializing/deserialize session information into/from JWT cookies.
 
 ## Enabling the bundle
 
