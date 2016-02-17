@@ -1,6 +1,6 @@
 # dropwizard-jwt-cookie-authentication
 
-Stalessness is not only an architectural constaint of RESTful applications, it also comes with a lot of advantages regarding scalability and memory usage.
+Statelessness is not only an architectural constaint of RESTful applications, it also comes with a lot of advantages regarding scalability and memory usage.
 
 A common pattern is to give the client a signed JWT containing all necessary authorization and/or session state information. This JWT must then be passed along subsequent requests, usually in bearer Authorization HTTP headers.
 
