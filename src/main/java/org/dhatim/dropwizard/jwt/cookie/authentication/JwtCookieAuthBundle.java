@@ -15,6 +15,7 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import static io.jsonwebtoken.SignatureAlgorithm.*;
 import static java.nio.charset.StandardCharsets.*;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -29,7 +30,6 @@ import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -121,7 +121,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                     //else make a key from the seed if it was provided
                     Optional.ofNullable(conf.getSecretSeed())
                             .map(seed -> Hashing.sha256().newHasher().putString(seed, UTF_8).hash().asBytes())
-                            .map(k -> (Key) new SecretKeySpec(k, SignatureAlgorithm.HS256.getJcaName()))
+                            .map(k -> (Key) new SecretKeySpec(k, HS256.getJcaName()))
                             //else generate a random key
                             .orElseGet(getHmacSha256KeyGenerator()::generateKey)
                 );
@@ -152,7 +152,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
 
     private static KeyGenerator getHmacSha256KeyGenerator(){
         try{
-            return KeyGenerator.getInstance("HmacSHA256");
+            return KeyGenerator.getInstance(HS256.getJcaName());
         } catch(NoSuchAlgorithmException e){
             throw new SecurityException(e);
         }
