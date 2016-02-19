@@ -29,8 +29,8 @@ import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -121,7 +121,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                     //else make a key from the seed if it was provided
                     Optional.ofNullable(conf.getSecretSeed())
                             .map(seed -> Hashing.sha256().newHasher().putString(seed, UTF_8).hash().asBytes())
-                            .map(k -> (Key) new SecretKeySpec(k, "HmacSHA256"))
+                            .map(k -> (Key) new SecretKeySpec(k, SignatureAlgorithm.HS256.getJcaName()))
                             //else generate a random key
                             .orElseGet(getHmacSha256KeyGenerator()::generateKey)
                 );
