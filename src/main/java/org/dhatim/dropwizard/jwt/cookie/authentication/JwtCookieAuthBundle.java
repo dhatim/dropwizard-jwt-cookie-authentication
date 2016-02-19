@@ -15,6 +15,8 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import static java.nio.charset.StandardCharsets.*;
+
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Ints;
@@ -29,12 +31,12 @@ import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Function;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -46,6 +48,9 @@ import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
  */
 public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePrincipal> implements ConfiguredBundle<C>{
 
+    private static final String JWT_COOKIE_PREFIX = "jwtCookie";
+    private static final String DEFAULT_COOKIE_NAME = "sessionToken";
+    
     private final Class<P> principalType;
     private final Function<P,Claims> serializer;
     private final Function<Claims, P> deserializer;
@@ -115,7 +120,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .orElseGet(() -> 
                     //else make a key from the seed if it was provided
                     Optional.ofNullable(conf.getSecretSeed())
-                            .map(seed -> Hashing.sha256().newHasher().putString(seed, StandardCharsets.UTF_8).hash().asBytes())
+                            .map(seed -> Hashing.sha256().newHasher().putString(seed, UTF_8).hash().asBytes())
                             .map(k -> (Key) new SecretKeySpec(k, "HmacSHA256"))
                             //else generate a random key
                             .orElseGet(getHmacSha256KeyGenerator()::generateKey)
@@ -123,12 +128,11 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         
         JerseyEnvironment jerseyEnvironment = environment.jersey();
         
-        String cookieName = "sessionToken";
         jerseyEnvironment.register(new AuthDynamicFeature(
                 new JwtCookieAuthRequestFilter.Builder()
-                .setCookieName(cookieName)
+                .setCookieName(DEFAULT_COOKIE_NAME)
                 .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
-                .setPrefix("jwtCookie")
+                .setPrefix(JWT_COOKIE_PREFIX)
                 .setAuthorizer((Authorizer<P>)(P::isInRole))
                 .buildAuthFilter()));
         jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
@@ -137,7 +141,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         jerseyEnvironment.register(new JwtCookieAuthResponseFilter<>(
                 principalType,
                 serializer,
-                cookieName,
+                DEFAULT_COOKIE_NAME,
                 conf.isHttpsOnlyCookie(),
                 key,
                 Ints.checkedCast(Duration.parse(conf.getSessionExpiryVolatile()).getSeconds()),
