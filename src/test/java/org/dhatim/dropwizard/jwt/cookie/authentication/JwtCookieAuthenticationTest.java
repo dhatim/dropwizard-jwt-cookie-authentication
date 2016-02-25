@@ -100,11 +100,10 @@ public class JwtCookieAuthenticationTest {
 
     @Test
     public void testRememberMe() {
-        //a volatile principal should not set a volatile cookie
+        //a volatile principal should set a volatile cookie
         DefaultJwtCookiePrincipal principal =  new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         NewCookie cookie = response.getCookies().get("sessionToken");
-        //default maxAge is 604800s (7 days)
         Assert.assertNotNull(cookie);
         Assert.assertEquals(-1, cookie.getMaxAge());
 
