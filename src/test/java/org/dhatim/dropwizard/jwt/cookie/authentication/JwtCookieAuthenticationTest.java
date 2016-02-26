@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Scanner;
 import java.util.UUID;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -104,8 +105,10 @@ public class JwtCookieAuthenticationTest {
         DefaultJwtCookiePrincipal principal =  new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         NewCookie cookie = response.getCookies().get("sessionToken");
+        System.err.println(new Scanner((InputStream) response.getEntity() ).useDelimiter("\\A").next());
         Assert.assertNotNull(cookie);
         Assert.assertEquals(-1, cookie.getMaxAge());
+        
 
         //a long term principal should set a persistent cookie
         principal.setPresistent(true);
