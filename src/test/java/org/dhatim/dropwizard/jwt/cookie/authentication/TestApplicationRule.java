@@ -15,10 +15,12 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import ch.qos.logback.classic.Level;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
 import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.logging.DefaultLoggingFactory;
 import io.dropwizard.server.SimpleServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -34,7 +36,9 @@ public class TestApplicationRule extends ExternalResource {
     private final DropwizardTestSupport<Configuration> testSupport;
     
     public TestApplicationRule(){
-        this.testSupport = new DropwizardTestSupport<Configuration>(FakeApplication.class, "") {
+        Configuration configuration = new Configuration();
+        ((DefaultLoggingFactory)configuration.getLoggingFactory()).setLevel(Level.DEBUG);
+        this.testSupport = new DropwizardTestSupport<Configuration>(FakeApplication.class, configuration) {
             @Override
             public Application<Configuration> newApplication() {
                 return new FakeApplication();
