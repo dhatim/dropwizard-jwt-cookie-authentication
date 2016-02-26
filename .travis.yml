@@ -6,5 +6,7 @@ addons:
     packages:
       - oracle-java8-installer
 install: true
+before_script:
+  - mvn dependency:tree
 after_success:
   - mvn jacoco:report coveralls:report
