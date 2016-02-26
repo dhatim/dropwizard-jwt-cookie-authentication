@@ -15,6 +15,7 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -39,6 +40,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal{
      * @param roles the roles the principal is in
      * @param claims custom data associated with the principal
      */
+    @JsonCreator
     public DefaultJwtCookiePrincipal(@JsonProperty("name")String name, @JsonProperty("persistent")boolean persistent, @JsonProperty("roles")Collection<String> roles, @JsonProperty("claims")Claims claims){
         this.claims = Optional.ofNullable(claims).orElseGet(Jwts::claims);
         this.claims.setSubject(name);
