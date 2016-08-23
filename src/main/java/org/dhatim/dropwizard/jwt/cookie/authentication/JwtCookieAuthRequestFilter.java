@@ -15,11 +15,11 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import com.google.common.base.Optional;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.AuthenticationException;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Priority;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Priorities;
