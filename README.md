@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/dhatim/dropwizard-jwt-cookie-authentication.svg?branch=master)](https://travis-ci.org/dhatim/dropwizard-jwt-cookie-authentication)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/dropwizard-jwt-cookie-authentication/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/dropwizard-jwt-cookie-authentication)
+[![Coverage Status](https://coveralls.io/repos/github/dhatim/dropwizard-jwt-cookie-authentication/badge.svg?branch=master)](https://coveralls.io/github/dhatim/dropwizard-jwt-cookie-authentication?branch=master)
+[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/org.dhatim/dropwizard-jwt-cookie-authentication/badge.svg)](http://www.javadoc.io/doc/org.dhatim/dropwizard-jwt-cookie-authentication)
+
 # dropwizard-jwt-cookie-authentication
 
 Statelessness is not only an architectural constaint of RESTful applications, it also comes with a lot of advantages regarding scalability and memory usage.
