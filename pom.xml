@@ -53,9 +53,9 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.6.0</version>
+            <version>0.7.0</version>
             <exclusions>
-                <!-- jjwt fetches a version of jackson incompatible with dropwizard -->
+                <!--  jjwt fetches a version of jackson incompatible with dropwizard -->
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
