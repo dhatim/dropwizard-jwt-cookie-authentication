@@ -84,3 +84,4 @@ $RECYCLE.BIN/
 *.settings
 *.classpath
 *.class
+bin
