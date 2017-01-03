@@ -41,14 +41,16 @@ class JwtCookieAuthRequestFilter<P extends JwtCookiePrincipal> extends AuthFilte
         Cookie cookie = crc.getCookies().get(cookieName);
         if (null != cookie) {
             String accessToken = cookie.getValue();
-            try {
-                final Optional<P> subject = authenticator.authenticate(accessToken);
-                if (subject.isPresent()) {
-                    crc.setSecurityContext(new JwtCookieSecurityContext(subject.get(), crc.getSecurityContext().isSecure()));
-                    return;
+            if (accessToken != null && accessToken.length() > 0) {
+                try {
+                    final Optional<P> subject = authenticator.authenticate(accessToken);
+                    if (subject.isPresent()) {
+                        crc.setSecurityContext(new JwtCookieSecurityContext(subject.get(), crc.getSecurityContext().isSecure()));
+                        return;
+                    }
+                } catch (AuthenticationException e) {
+                    throw new InternalServerErrorException(e);
                 }
-            } catch (AuthenticationException e) {
-                throw new InternalServerErrorException(e);
             }
         }
         throw new WebApplicationException(unauthorizedHandler.buildResponse(prefix, realm));
