@@ -23,7 +23,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
 </dependency>
   ```
 
@@ -149,4 +149,4 @@ bootstrap.addBundle(new JwtCookieAuthBundle<>(MyApplicationConfiguration::getJwt
 
 ## Javadoc
 
-It's [here](http://dhatim.github.io/dropwizard-jwt-cookie-authentication).
+It's [here](http://www.javadoc.io/doc/org.dhatim/dropwizard-jwt-cookie-authentication).
