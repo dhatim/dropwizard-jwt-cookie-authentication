@@ -117,14 +117,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         Key key = Optional
                 .ofNullable(keySuppplier)
                 .map(k -> k.apply(configuration, environment))
-                .orElseGet(() -> 
-                    //else make a key from the seed if it was provided
-                    Optional.ofNullable(conf.getSecretSeed())
-                            .map(seed -> Hashing.sha256().newHasher().putString(seed, UTF_8).hash().asBytes())
-                            .map(k -> (Key) new SecretKeySpec(k, HS256.getJcaName()))
-                            //else generate a random key
-                            .orElseGet(getHmacSha256KeyGenerator()::generateKey)
-                );
+                .orElseGet(() -> generateKey(conf.getSecretSeed()));
         
         JerseyEnvironment jerseyEnvironment = environment.jersey();
         
@@ -148,6 +141,15 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 Ints.checkedCast(Duration.parse(conf.getSessionExpiryPersistent()).getSeconds())));
         
         jerseyEnvironment.register(DontRefreshSessionFilter.class);
+    }
+
+    public static Key generateKey(String secretSeed) {
+        return //else make a key from the seed if it was provided
+        Optional.ofNullable(secretSeed)
+                .map(seed -> Hashing.sha256().newHasher().putString(seed, UTF_8).hash().asBytes())
+                .map(k -> (Key) new SecretKeySpec(k, HS256.getJcaName()))
+                //else generate a random key
+                .orElseGet(getHmacSha256KeyGenerator()::generateKey);
     }
 
     private static KeyGenerator getHmacSha256KeyGenerator(){
