@@ -31,8 +31,9 @@ import javax.ws.rs.container.ContainerResponseFilter;
 
 class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements ContainerResponseFilter {
 
-    private static final String COOKIE_TEMPLATE_INSECURE = "=%s; Path=/;";
-    private static final String COOKIE_TEMPLATE_SECURE = COOKIE_TEMPLATE_INSECURE + " secure";
+    private static final String COOKIE_TEMPLATE = "=%s; Path=/";
+    private static final String SECURE_FLAG="; Secure";
+    private static final String HTTP_ONLY_FLAG="; HttpOnly";
     private static final String DELETE_COOKIE_TEMPLATE = "=; Path=/; expires=Thu, 01-Jan-70 00:00:00 GMT";
 
     private final Class<P> principalType;
@@ -50,7 +51,8 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
             Class<P> principalType,
             Function<P, Claims> serializer,
             String cookieName,
-            boolean httpsOnly,
+            boolean secure,
+            boolean httpOnly,
             Key signingKey,
             int volatileSessionDuration,
             int persistentSessionDuration) {
@@ -58,11 +60,15 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
         this.principalType = principalType;
         this.serializer = serializer;
         this.cookieName = cookieName;
-        this.sessionCookieFormat = cookieName
-                + (httpsOnly
-                        ? COOKIE_TEMPLATE_SECURE
-                        : COOKIE_TEMPLATE_INSECURE);
-        this.persistentCookieFormat = sessionCookieFormat + " Max-Age=%d;";
+        StringBuilder cookieFormatBuilder = new StringBuilder(cookieName).append(COOKIE_TEMPLATE);
+        if(secure){
+            cookieFormatBuilder.append(SECURE_FLAG);
+        }
+        if(httpOnly){
+            cookieFormatBuilder.append(HTTP_ONLY_FLAG);
+        }
+        this.sessionCookieFormat = cookieFormatBuilder.toString();
+        this.persistentCookieFormat = sessionCookieFormat + "; Max-Age=%d;";
         this.deleteCookie = cookieName + DELETE_COOKIE_TEMPLATE;
         this.signingKey = signingKey;
         this.volatileSessionDuration = volatileSessionDuration;

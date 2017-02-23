@@ -34,7 +34,8 @@ The default values are shown below. If they suit you, this step is optional.
 ```yml
 jwtCookieAuth:
   secretSeed: null
-  httpsOnlyCookie: false
+  secure: false
+  httpOnly: true
   sessionExpiryVolatile: PT30m
   sessionExpiryPersistent: P7d
 ```
