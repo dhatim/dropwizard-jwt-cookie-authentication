@@ -61,6 +61,7 @@ public class JwtCookieAuthenticationTest {
         NewCookie cookie1 = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie1);
         Assert.assertTrue(Strings.hasText(cookie1.getValue()));
+        Assert.assertTrue(cookie1.isHttpOnly());
 
         //a GET with this cookie should return the Principal and refresh the cookie
         response = target.request(MediaType.APPLICATION_JSON).cookie(cookie1).get();
@@ -72,26 +73,26 @@ public class JwtCookieAuthenticationTest {
         Assert.assertTrue(Strings.hasText(cookie1.getValue()));
         Assert.assertNotSame(cookie1.getValue(), cookie2.getValue());
     }
-    
+
     @Test
     public void testDontRefreshSession() throws IOException{
         //requests made to methods annotated with @DontRefreshSession should not modify the cookie
         String principalName = UUID.randomUUID().toString();
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
         NewCookie cookie = response.getCookies().get("sessionToken");
-        
+
         response = target.path("idempotent").request(MediaType.APPLICATION_JSON).cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals(principalName, getPrincipal(response).getName());
         Assert.assertNull(response.getCookies().get("sessionToken"));
     }
-    
+
     @Test
     public void testPublicEndpoint(){
-        //public endpoints (i.e. no with @Auth, @RolesAllowed etc.) should not modify the cookie
+        //public endpoints (i.e. not with @Auth, @RolesAllowed etc.) should not modify the cookie
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString())));
         NewCookie cookie = response.getCookies().get("sessionToken");
-        
+
         //request made to public methods should not refresh the cookie
         response = target.path("public").request(MediaType.APPLICATION_JSON).cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
@@ -119,7 +120,7 @@ public class JwtCookieAuthenticationTest {
     @Test
     public void testRoles() {
         WebTarget restrictedTarget = target.path("restricted");
-        //try to access the resource without cookie (-> 401 UNAUTHORIZED) 
+        //try to access the resource without cookie (-> 401 UNAUTHORIZED)
         Response response = restrictedTarget.request().get();
         Assert.assertEquals(401, response.getStatus());
 
@@ -139,13 +140,13 @@ public class JwtCookieAuthenticationTest {
         response = restrictedTarget.request().cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
     }
-   
+
     @Test
     public void testDeleteCookie() {
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString())));
         NewCookie cookie = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie);
-        
+
         //removing the principal should produce a cookie with empty contenant and a past expiration date
         response = target.path("unset").request().cookie(cookie).get();
         Assert.assertEquals(204, response.getStatus());

@@ -15,9 +15,6 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import static io.jsonwebtoken.SignatureAlgorithm.*;
-import static java.nio.charset.StandardCharsets.*;
-
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Ints;
@@ -30,7 +27,9 @@ import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
+import static io.jsonwebtoken.SignatureAlgorithm.*;
 import io.jsonwebtoken.impl.DefaultClaims;
+import static java.nio.charset.StandardCharsets.*;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -50,7 +49,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
 
     private static final String JWT_COOKIE_PREFIX = "jwtCookie";
     private static final String DEFAULT_COOKIE_NAME = "sessionToken";
-    
+
     private final Class<P> principalType;
     private final Function<P,Claims> serializer;
     private final Function<Claims, P> deserializer;
@@ -68,7 +67,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 DefaultJwtCookiePrincipal::getClaims,
                 DefaultJwtCookiePrincipal::new);
     }
-    
+
     /**
      * Build a new instance of JwtCookieAuthBundle
      * @param principalType the class of the principal that will be serialized in / deserialized from JWT cookies
@@ -101,26 +100,26 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         this.configurationSupplier = configurationSupplier;
         return this;
     }
-    
-    
+
+
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
         //in case somebody needs to serialize a DefaultJwtCookiePrincipal
         bootstrap.getObjectMapper().registerModule(new SimpleModule().addAbstractTypeMapping(Claims.class, DefaultClaims.class));
     }
-    
+
     @Override
     public void run(C configuration, Environment environment) throws Exception {
         JwtCookieAuthConfiguration conf = configurationSupplier.apply(configuration);
-        
+
         //build the key from the key factory if it was provided
         Key key = Optional
                 .ofNullable(keySuppplier)
                 .map(k -> k.apply(configuration, environment))
                 .orElseGet(() -> generateKey(conf.getSecretSeed()));
-        
+
         JerseyEnvironment jerseyEnvironment = environment.jersey();
-        
+
         jerseyEnvironment.register(new AuthDynamicFeature(
                 new JwtCookieAuthRequestFilter.Builder()
                 .setCookieName(DEFAULT_COOKIE_NAME)
@@ -130,16 +129,17 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .buildAuthFilter()));
         jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
         jerseyEnvironment.register(RolesAllowedDynamicFeature.class);
-        
+
         jerseyEnvironment.register(new JwtCookieAuthResponseFilter<>(
                 principalType,
                 serializer,
                 DEFAULT_COOKIE_NAME,
-                conf.isHttpsOnlyCookie(),
+                conf.isSecure(),
+                conf.isHttpOnly(),
                 key,
                 Ints.checkedCast(Duration.parse(conf.getSessionExpiryVolatile()).getSeconds()),
                 Ints.checkedCast(Duration.parse(conf.getSessionExpiryPersistent()).getSeconds())));
-        
+
         jerseyEnvironment.register(DontRefreshSessionFilter.class);
     }
 
