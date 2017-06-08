@@ -81,7 +81,7 @@ Once a principal has been set, it can be retrieved using the `@Auth` annotation 
 
 Each time an API endpoint is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` on methods where this behavior is unwanted.
 
-To specify a max age in the cookie (aka "remember me"), use `DefaultJwtCookiePrincipal.setPresistent(true)`.
+To specify a max age in the cookie (aka "remember me"), use `DefaultJwtCookiePrincipal.setPersistent(true)`.
 
 It is a stateless auhtentication method, so there is no real way to invalidate a session other than waiting for the JWT to expire. However calling `JwtCookiePrincipal.removeFromContext(context)` will make browsers discard the cookie by setting the cookie expiration to a past date.
 

@@ -109,7 +109,7 @@ public class JwtCookieAuthenticationTest {
         Assert.assertEquals(-1, cookie.getMaxAge());
 
         //a long term principal should set a persistent cookie
-        principal.setPresistent(true);
+        principal.setPersistent(true);
         response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         cookie = response.getCookies().get("sessionToken");
         //default maxAge is 604800s (7 days)

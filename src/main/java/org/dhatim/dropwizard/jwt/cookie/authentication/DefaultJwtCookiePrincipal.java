@@ -15,7 +15,6 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -124,8 +123,19 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * Set if the cookie must be persistent
      *
      * @param persistent if the cookie must be persistent
+     * @deprecated  Typo in method name. Replaced by {@link #setPersistent()}
      */
+    @Deprecated
     public void setPresistent(boolean persistent) {
+        setPersistent(persistent);
+    }
+
+    /**
+     * Set if the cookie must be persistent
+     *
+     * @param persistent if the cookie must be persistent
+     */
+    public void setPersistent(boolean persistent) {
         claims.put(PERSISTENT, persistent);
     }
 
