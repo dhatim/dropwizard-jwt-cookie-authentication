@@ -123,7 +123,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * Set if the cookie must be persistent
      *
      * @param persistent if the cookie must be persistent
-     * @deprecated  Typo in method name. Replaced by {@link #setPersistent()}
+     * @deprecated  Typo in method name. Replaced by {@link #setPersistent(boolean)}
      */
     @Deprecated
     public void setPresistent(boolean persistent) {
