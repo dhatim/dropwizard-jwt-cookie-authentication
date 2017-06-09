@@ -101,7 +101,8 @@ public DefaultJwtCookiePrincipal login(@Context ContainerRequestContext requestC
 }
 
 @GET
-public DefaultJwtCookiePrincipal logout(@Context ContainerRequestContext requestContext){
+@Path("logout")
+public void logout(@Context ContainerRequestContext requestContext){
     JwtCookiePrincipal.removeFromContext(requestContext);
 }
 
