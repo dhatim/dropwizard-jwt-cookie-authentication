@@ -5,7 +5,7 @@ decrypt:
   pubring.gpg: "repo/pubring.gpg.asc"
   secring.gpg: "repo/secring.gpg.asc"
 docker:
-  image: "teamed/docker-java-8"
+  image: "maven:3.5.0-jdk-8-alpine"
 release:
   commanders:
     - msuret
