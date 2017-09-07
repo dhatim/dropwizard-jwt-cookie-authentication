@@ -77,7 +77,7 @@ JwtCookiePrincipal principal = new DefaultJwtCookiePrincipal(name);
 principal.addInContext(context);
 ```
 
-Once a principal has been set, it can be retrieved using the `@Auth` annotation in method signatures.
+Once a principal has been set, it can be retrieved using the `@Auth` annotation in method signatures. You can also use `CurrentPrincipal.get()` within the request thread.
 
 Each time an API endpoint is called, a fresh cookie JWT is issued to reset the session TTL. You can use the `@DontRefreshSession` on methods where this behavior is unwanted.
 
