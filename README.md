@@ -23,7 +23,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
   ```
 
@@ -69,7 +69,7 @@ bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withConfigurationSupplier(M
 
 ## Using the bundle
 
-By default, the JWT cookie is serialized from / deserialized in an instance of `DefaultJwtCookiePrincipal`.
+By default, the JWT cookie is serialized from / deserialized in an instance of [`DefaultJwtCookiePrincipal`](http://static.javadoc.io/org.dhatim/dropwizard-jwt-cookie-authentication/3.0.0/org/dhatim/dropwizard/jwt/cookie/authentication/DefaultJwtCookiePrincipal.html).
 
 When the user authenticate, you must put an instance of `DefaultJwtCookiePrincipal` in the security context (which you can inject in your resources using the `@Context` annotation) using `JwtCookiePrincipal.addInContext`
 ```java
@@ -101,14 +101,15 @@ public DefaultJwtCookiePrincipal login(@Context ContainerRequestContext requestC
 }
 
 @GET
-public DefaultJwtCookiePrincipal logout(@Context ContainerRequestContext requestContext){
+@Path("logout")
+public void logout(@Context ContainerRequestContext requestContext){
     JwtCookiePrincipal.removeFromContext(requestContext);
 }
 
 @GET
 @Produces(MediaType.APPLICATION_JSON)
-public Subject getPrincipal(@Auth DefaultJwtCookiePrincipal principal){
-    return subject;
+public DefaultJwtCookiePrincipal getPrincipal(@Auth DefaultJwtCookiePrincipal principal){
+    return principal;
 }
 
 @GET
@@ -145,7 +146,7 @@ To avoid this, you can specify a `secretSeed` in the configuration. This seed wi
 
 Alternatively you can specify your own key factory:
 ```java
-bootstrap.addBundle(new JwtCookieAuthBundle<>(MyApplicationConfiguration::getJwtCookieAuth).setKeyFactory((configuration, environment) -> {/*return your own key*/}));
+bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withKeyProvider((configuration, environment) -> {/*return your own key*/}));
 ```
 
 ## Javadoc
