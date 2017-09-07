@@ -87,6 +87,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
                             : String.format(sessionCookieFormat, getJwt(cookiePrincipal, volatileSessionDuration));
 
                     response.getHeaders().add("Set-Cookie", cookie);
+                    CurrentPrincipal.remove();
                 }
             } else if (request.getCookies().containsKey(cookieName)) {
                 //the principal has been unset during the response, delete the cookie

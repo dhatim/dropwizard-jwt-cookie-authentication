@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 
 @Path("principal")
 public class TestResource {
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -36,19 +36,19 @@ public class TestResource {
         principal.addInContext(requestContext);
         return principal;
     }
-    
+
     @GET
     @Path("unset")
     public void unsetPrincipal(@Context ContainerRequestContext context){
         JwtCookiePrincipal.removeFromContext(context);
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public DefaultJwtCookiePrincipal getPrincipal(@Auth DefaultJwtCookiePrincipal principal){
         return principal;
     }
-    
+
     @GET
     @Path("idempotent")
     @Produces(MediaType.APPLICATION_JSON)
@@ -56,17 +56,24 @@ public class TestResource {
     public DefaultJwtCookiePrincipal getPrincipalWithoutRefreshingSession(@Auth DefaultJwtCookiePrincipal principal){
         return principal;
     }
-    
+
     @GET
     @Path("restricted")
     @RolesAllowed("admin")
     public String getRestrictedResource(){
         return "SuperSecretStuff";
     }
-    
+
     @GET
     @Path("public")
     public String getPublicResource(){
         return "PublicStuff";
+    }
+
+    @GET
+    @Path("current")
+    @Produces(MediaType.APPLICATION_JSON)
+    public DefaultJwtCookiePrincipal getCurrentPrincipal(@Auth DefaultJwtCookiePrincipal principal){
+        return CurrentPrincipal.get();
     }
 }

@@ -45,6 +45,7 @@ class JwtCookieAuthRequestFilter<P extends JwtCookiePrincipal> extends AuthFilte
                 try {
                     final Optional<P> subject = authenticator.authenticate(accessToken);
                     if (subject.isPresent()) {
+                        CurrentPrincipal.set(subject.get());
                         crc.setSecurityContext(new JwtCookieSecurityContext(subject.get(), crc.getSecurityContext().isSecure()));
                         return;
                     }

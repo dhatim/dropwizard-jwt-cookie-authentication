@@ -156,6 +156,19 @@ public class JwtCookieAuthenticationTest {
         Assert.assertEquals(Date.from(Instant.EPOCH), cookie.getExpiry());
     }
 
+    @Test
+    public void testGetCurrentPrincipal() throws IOException{
+        //test to get principal from CurrentPrincipal.get() instead of @Auth
+        String principalName = UUID.randomUUID().toString();
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
+        NewCookie cookie = response.getCookies().get("sessionToken");
+        Assert.assertNotNull(cookie);
+
+        response = target.path("current").request(MediaType.APPLICATION_JSON).cookie(cookie).get();
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals(principalName,  getPrincipal(response).getName());
+    }
+
     private DefaultJwtCookiePrincipal getPrincipal(Response response) throws IOException {
         return applicationRule
                 .getSupport()
