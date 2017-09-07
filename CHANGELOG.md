@@ -1,5 +1,9 @@
 # Change Log
 
+## [3.1.0] - 2017-09-07
+
+- [ADDED] `CurrentPrincipal.get` accessor
+
 ## [3.0.0] - 2017-02-23
 
 - [ADDED] `httpOnly` flag configuration
