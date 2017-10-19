@@ -37,7 +37,7 @@ public class TestApplicationRule extends ExternalResource {
     
     public TestApplicationRule(){
         Configuration configuration = new Configuration();
-        ((DefaultLoggingFactory)configuration.getLoggingFactory()).setLevel(Level.DEBUG);
+        ((DefaultLoggingFactory)configuration.getLoggingFactory()).setLevel("DEBUG");
         this.testSupport = new DropwizardTestSupport<Configuration>(FakeApplication.class, configuration) {
             @Override
             public Application<Configuration> newApplication() {
