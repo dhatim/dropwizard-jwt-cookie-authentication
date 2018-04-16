@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>3.2.0</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Dropwizard bundle managing authentication through JWT cookies</description>
