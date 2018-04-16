@@ -21,15 +21,16 @@ import com.google.common.primitives.Ints;
 import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.Authorizer;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
-import static io.jsonwebtoken.SignatureAlgorithm.*;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
-import static java.nio.charset.StandardCharsets.*;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -38,6 +39,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
+import javax.ws.rs.container.ContainerResponseFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 /**
@@ -119,42 +121,64 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .orElseGet(() -> generateKey(conf.getSecretSeed()));
 
         JerseyEnvironment jerseyEnvironment = environment.jersey();
+        jerseyEnvironment.register(new AuthDynamicFeature(getAuthRequestFilter(key)));
+        jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
+        jerseyEnvironment.register(RolesAllowedDynamicFeature.class);
+        jerseyEnvironment.register(getAuthResponseFilter(key, conf));
+        jerseyEnvironment.register(DontRefreshSessionFilter.class);
+    }
 
-        jerseyEnvironment.register(new AuthDynamicFeature(
-                new JwtCookieAuthRequestFilter.Builder()
+    /**
+     * Get a filter that will desezialize the principal from JWT cookies found in HTTP requests
+     * @param key the key used to validate the JWT
+     * @return the request filter
+     */
+    public AuthFilter<String, P> getAuthRequestFilter(Key key){
+        return new JwtCookieAuthRequestFilter.Builder()
                 .setCookieName(DEFAULT_COOKIE_NAME)
                 .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
                 .setPrefix(JWT_COOKIE_PREFIX)
                 .setAuthorizer((Authorizer<P>)(P::isInRole))
-                .buildAuthFilter()));
-        jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
-        jerseyEnvironment.register(RolesAllowedDynamicFeature.class);
+                .buildAuthFilter();
+    }
 
-        jerseyEnvironment.register(new JwtCookieAuthResponseFilter<>(
+    /**
+     * Get a filter that will serialize principals into JWTs and add them to HTTP response cookies
+     * @param key the key used to sign the JWT
+     * @param configuration cookie configuration (secure, httpOnly, expiration...)
+     * @return the response filter
+     */
+    public ContainerResponseFilter getAuthResponseFilter(Key key, JwtCookieAuthConfiguration configuration) {
+        return new JwtCookieAuthResponseFilter<>(
                 principalType,
                 serializer,
                 DEFAULT_COOKIE_NAME,
-                conf.isSecure(),
-                conf.isHttpOnly(),
+                configuration.isSecure(),
+                configuration.isHttpOnly(),
                 key,
-                Ints.checkedCast(Duration.parse(conf.getSessionExpiryVolatile()).getSeconds()),
-                Ints.checkedCast(Duration.parse(conf.getSessionExpiryPersistent()).getSeconds())));
-
-        jerseyEnvironment.register(DontRefreshSessionFilter.class);
+                Ints.checkedCast(Duration.parse(configuration.getSessionExpiryVolatile()).getSeconds()),
+                Ints.checkedCast(Duration.parse(configuration.getSessionExpiryPersistent()).getSeconds()));
     }
 
+    /**
+     * Generate a HMAC SHA256 Key that can be used to sign JWTs
+     * @param secretSeed a seed from which the key will be generated.
+     * Identical seeds will generate identical keys.
+     * If null, a random key is returned.
+     * @return a HMAC SHA256 Key
+     */
     public static Key generateKey(String secretSeed) {
-        return //else make a key from the seed if it was provided
-        Optional.ofNullable(secretSeed)
-                .map(seed -> Hashing.sha256().newHasher().putString(seed, UTF_8).hash().asBytes())
-                .map(k -> (Key) new SecretKeySpec(k, HS256.getJcaName()))
+        // make a key from the seed if it was provided
+        return Optional.ofNullable(secretSeed)
+                .map(seed -> Hashing.sha256().newHasher().putString(seed, StandardCharsets.UTF_8).hash().asBytes())
+                .map(k -> (Key) new SecretKeySpec(k, SignatureAlgorithm.HS256.getJcaName()))
                 //else generate a random key
                 .orElseGet(getHmacSha256KeyGenerator()::generateKey);
     }
 
     private static KeyGenerator getHmacSha256KeyGenerator(){
         try{
-            return KeyGenerator.getInstance(HS256.getJcaName());
+            return KeyGenerator.getInstance(SignatureAlgorithm.HS256.getJcaName());
         } catch(NoSuchAlgorithmException e){
             throw new SecurityException(e);
         }
