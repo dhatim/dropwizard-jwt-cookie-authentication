@@ -24,7 +24,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>3.0.1</version>
+    <version>3.2.0</version>
 </dependency>
   ```
 
@@ -148,6 +148,38 @@ To avoid this, you can specify a `secretSeed` in the configuration. This seed wi
 Alternatively you can specify your own key factory:
 ```java
 bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withKeyProvider((configuration, environment) -> {/*return your own key*/}));
+```
+## Manual Setup
+
+If you need [Chained Factories](http://www.dropwizard.io/1.3.1/docs/manual/auth.html#chained-factories) or [Multiple Principals and Authenticators](http://www.dropwizard.io/1.3.1/docs/manual/auth.html#multiple-principals-and-authenticators), don't register directly the bundle. Use instead its `getAuthRequestFilter` and `getAuthResponseFilter` methods to manually setup authentication.
+
+You will also be responsible for generating the signing key and registering `RolesAllowedDynamicFeature` or `DontRefreshSessionFilter` if they are needed.
+
+Example:
+
+```java
+JwtCookieAuthBundle jwtCookieAuthBundle = new JwtCookieAuthBundle<>(
+    MyJwtCookiePrincipal.class,
+    MyJwtCookiePrincipal::toClaims,
+    MyJwtCookiePrincipal::new);
+
+Key key = JwtCookieAuthBundle.generateKey(configuration.getJwtCookieAuth().getSecretSeed());
+
+environment.jersey().register(
+        new PolymorphicAuthDynamicFeature<>(
+                ImmutableMap.of(
+                        MyJwtCookiePrincipal.class, jwtCookieAuthBundle.getAuthRequestFilter(key),
+                        MyBasicPrincipal.class, new BasicCredentialAuthFilter.Builder<MyBasicPrincipal>()
+                            .setAuthenticator(new MyBasicAuthenticator())
+                            .setRealm("SUPER SECRET STUFF")
+                            .buildAuthFilter()
+                )
+        )
+);
+environment.jersey().register(new PolymorphicAuthValueFactoryProvider.Binder<>(ImmutableSet.of(MyJwtCookiePrincipal.class, MyBasicPrincipal.class)));
+environment.jersey().register(RolesAllowedDynamicFeature.class);
+environment.jersey().register(DontRefreshSessionFilter.class);
+environment.jersey().register(jwtCookieAuthBundle.getAuthResponseFilter(key, configuration.getJwtCookieAuth()));
 ```
 
 ## Javadoc
