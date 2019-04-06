@@ -11,6 +11,7 @@ env:
 release:
   commanders:
     - msuret
+    - ochedru
   script: |
     mvn versions:set "-DnewVersion=${tag}"
     git commit -am "${tag}"
