@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dhatim</groupId>
         <artifactId>root-oss</artifactId>
-        <version>10.3.0</version>
+        <version>14.13.0</version>
     </parent>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
@@ -32,6 +32,9 @@
         <developerConnection>scm:git:git@github.com:dhatim/dropwizard-jwt-cookie-authentication.git</developerConnection>
         <url>git@github.com:dhatim/dropwizard-jwt-cookie-authentication.git</url>
     </scm>
+    <properties>
+        <jjwt.version>0.10.6</jjwt.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>io.dropwizard</groupId>
@@ -43,7 +46,18 @@
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
