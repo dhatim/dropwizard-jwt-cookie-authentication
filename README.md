@@ -4,6 +4,8 @@
 [![Javadoc](https://www.javadoc.io/badge/org.dhatim/dropwizard-jwt-cookie-authentication.svg)](http://www.javadoc.io/doc/org.dhatim/dropwizard-jwt-cookie-authentication)
 [![Mentioned in Awesome Dropwizard](https://awesome.re/mentioned-badge.svg)](https://github.com/stve/awesome-dropwizard)
 
+**Please note version 4 requires Dropwizard 2 and JDK 13.**
+
 # dropwizard-jwt-cookie-authentication
 
 Statelessness is not only an architectural constaint of RESTful applications, it also comes with a lot of advantages regarding scalability and memory usage.
@@ -24,7 +26,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>3.2.0</version>
+    <version>4.0.0</version>
 </dependency>
   ```
 
