@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dhatim</groupId>
         <artifactId>root-oss</artifactId>
-        <version>14.13.0</version>
+        <version>17.0.4</version>
     </parent>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
@@ -33,7 +33,8 @@
         <url>git@github.com:dhatim/dropwizard-jwt-cookie-authentication.git</url>
     </scm>
     <properties>
-        <jjwt.version>0.10.6</jjwt.version>
+        <jjwt.version>0.10.7</jjwt.version>
+        <enforcer.fail>false</enforcer.fail>
     </properties>
     <dependencies>
         <dependency>
@@ -73,6 +74,15 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>--enable-preview</compilerArgument>
+                    <source>13</source>
+                    <target>13</target>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <executions>
@@ -82,6 +92,12 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--enable-preview</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
@@ -123,6 +139,9 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <source>8</source>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
