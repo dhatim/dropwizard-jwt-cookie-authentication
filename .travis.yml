@@ -1,10 +1,5 @@
 language: java
-jdk:
-  - oraclejdk8
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+jdk: openjdk13
 install: true
 before_script:
   - mvn dependency:tree
