@@ -4,7 +4,7 @@
 [![Javadoc](https://www.javadoc.io/badge/org.dhatim/dropwizard-jwt-cookie-authentication.svg)](http://www.javadoc.io/doc/org.dhatim/dropwizard-jwt-cookie-authentication)
 [![Mentioned in Awesome Dropwizard](https://awesome.re/mentioned-badge.svg)](https://github.com/stve/awesome-dropwizard)
 
-**Please note version 4 requires Dropwizard 2 and JDK 13.**
+**Please note version 4 requires Dropwizard 2.**
 
 # dropwizard-jwt-cookie-authentication
 
