@@ -85,3 +85,5 @@ $RECYCLE.BIN/
 *.classpath
 *.class
 bin
+/.idea/
+/dropwizard-jwt-cookie-authentication.iml
