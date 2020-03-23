@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Dhatim
+ * Copyright 2020 Dhatim
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,5 +28,5 @@ import javax.ws.rs.NameBinding;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface DontRefreshSession {
-    
+
 }

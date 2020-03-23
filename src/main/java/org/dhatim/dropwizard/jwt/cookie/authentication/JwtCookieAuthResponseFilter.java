@@ -1,12 +1,12 @@
 /**
- * Copyright 2016 Dhatim
- *
+ * Copyright 2020 Dhatim
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -18,6 +18,10 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import java.io.IOException;
 import java.security.Key;
 import java.security.Principal;
@@ -25,15 +29,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.function.Function;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 
 class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements ContainerResponseFilter {
 
     private static final String COOKIE_TEMPLATE = "=%s; Path=/";
-    private static final String SECURE_FLAG="; Secure";
-    private static final String HTTP_ONLY_FLAG="; HttpOnly";
+    private static final String SECURE_FLAG = "; Secure";
+    private static final String HTTP_ONLY_FLAG = "; HttpOnly";
+    private static final String SAME_SITE_FLAG = "; SameSite=";
     private static final String DELETE_COOKIE_TEMPLATE = "=; Path=/; expires=Thu, 01-Jan-70 00:00:00 GMT";
 
     private final Class<P> principalType;
@@ -53,6 +55,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
             String cookieName,
             boolean secure,
             boolean httpOnly,
+            SameSite sameSite,
             Key signingKey,
             int volatileSessionDuration,
             int persistentSessionDuration) {
@@ -61,11 +64,14 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
         this.serializer = serializer;
         this.cookieName = cookieName;
         StringBuilder cookieFormatBuilder = new StringBuilder(cookieName).append(COOKIE_TEMPLATE);
-        if(secure){
+        if (secure) {
             cookieFormatBuilder.append(SECURE_FLAG);
         }
-        if(httpOnly){
+        if (httpOnly) {
             cookieFormatBuilder.append(HTTP_ONLY_FLAG);
+        }
+        if (sameSite != null) {
+            cookieFormatBuilder.append(SAME_SITE_FLAG).append(sameSite.value);
         }
         this.sessionCookieFormat = cookieFormatBuilder.toString();
         this.persistentCookieFormat = sessionCookieFormat + "; Max-Age=%d;";
@@ -98,7 +104,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
 
     private String getJwt(P subject, int expiresIn) {
         return Jwts.builder()
-                .signWith(SignatureAlgorithm.HS256, signingKey)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .setClaims(serializer.apply(subject))
                 .setExpiration(Date.from(Instant.now().plus(expiresIn, ChronoUnit.SECONDS)))
                 .compact();

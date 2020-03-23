@@ -1,12 +1,12 @@
 /**
- * Copyright 2016 Dhatim
- *
+ * Copyright 2020 Dhatim
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,6 +16,16 @@
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import io.jsonwebtoken.lang.Strings;
+import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,15 +34,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import junit.framework.Assert;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 public class JwtCookieAuthenticationTest {
 
@@ -75,7 +76,7 @@ public class JwtCookieAuthenticationTest {
     }
 
     @Test
-    public void testDontRefreshSession() throws IOException{
+    public void testDontRefreshSession() throws IOException {
         //requests made to methods annotated with @DontRefreshSession should not modify the cookie
         String principalName = UUID.randomUUID().toString();
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
@@ -88,7 +89,7 @@ public class JwtCookieAuthenticationTest {
     }
 
     @Test
-    public void testPublicEndpoint(){
+    public void testPublicEndpoint() {
         //public endpoints (i.e. not with @Auth, @RolesAllowed etc.) should not modify the cookie
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(UUID.randomUUID().toString())));
         NewCookie cookie = response.getCookies().get("sessionToken");
@@ -102,7 +103,7 @@ public class JwtCookieAuthenticationTest {
     @Test
     public void testRememberMe() {
         //a volatile principal should set a volatile cookie
-        DefaultJwtCookiePrincipal principal =  new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
+        DefaultJwtCookiePrincipal principal = new DefaultJwtCookiePrincipal(UUID.randomUUID().toString());
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(principal));
         NewCookie cookie = response.getCookies().get("sessionToken");
         Assert.assertNotNull(cookie);
@@ -157,7 +158,7 @@ public class JwtCookieAuthenticationTest {
     }
 
     @Test
-    public void testGetCurrentPrincipal() throws IOException{
+    public void testGetCurrentPrincipal() throws IOException {
         //test to get principal from CurrentPrincipal.get() instead of @Auth
         String principalName = UUID.randomUUID().toString();
         Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new DefaultJwtCookiePrincipal(principalName)));
@@ -166,7 +167,7 @@ public class JwtCookieAuthenticationTest {
 
         response = target.path("current").request(MediaType.APPLICATION_JSON).cookie(cookie).get();
         Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(principalName,  getPrincipal(response).getName());
+        Assert.assertEquals(principalName, getPrincipal(response).getName());
     }
 
     private DefaultJwtCookiePrincipal getPrincipal(Response response) throws IOException {

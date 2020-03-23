@@ -26,7 +26,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>4.0.1</version>
+    <version>4.2.0</version>
 </dependency>
   ```
 
@@ -39,6 +39,7 @@ jwtCookieAuth:
   secretSeed: null
   secure: false
   httpOnly: true
+  sameSite: null
   sessionExpiryVolatile: PT30m
   sessionExpiryPersistent: P7d
 ```
@@ -126,7 +127,7 @@ public DefaultJwtCookiePrincipal getSubjectWithoutRefreshingSession(@Auth Defaul
 @GET
 @Path("restricted")
 @RolesAllowed("admin")
-public String getRestrisctedResource(){
+public String getRestrictedResource(){
     return "SuperSecretStuff";
 }
 ```
@@ -153,7 +154,7 @@ bootstrap.addBundle(JwtCookieAuthBundle.getDefault().withKeyProvider((configurat
 ```
 ## Manual Setup
 
-If you need [Chained Factories](http://www.dropwizard.io/1.3.1/docs/manual/auth.html#chained-factories) or [Multiple Principals and Authenticators](http://www.dropwizard.io/1.3.1/docs/manual/auth.html#multiple-principals-and-authenticators), don't register directly the bundle. Use instead its `getAuthRequestFilter` and `getAuthResponseFilter` methods to manually setup authentication.
+If you need [Chained Factories](https://www.dropwizard.io/en/latest/manual/auth.html#chained-factories) or [Multiple Principals and Authenticators](https://www.dropwizard.io/en/latest/manual/auth.html#multiple-principals-and-authenticators), don't register directly the bundle. Use instead its `getAuthRequestFilter` and `getAuthResponseFilter` methods to manually setup authentication.
 
 You will also be responsible for generating the signing key and registering `RolesAllowedDynamicFeature` or `DontRefreshSessionFilter` if they are needed.
 
