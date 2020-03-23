@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Dhatim
+ * Copyright 2020 Dhatim
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import ch.qos.logback.classic.Level;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
@@ -25,8 +24,9 @@ import io.dropwizard.server.SimpleServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.DropwizardTestSupport;
-import java.net.URI;
 import org.junit.rules.ExternalResource;
+
+import java.net.URI;
 
 /**
  * Inspired by DropwizardClientRule (which sadly cannot register bundles)
@@ -34,7 +34,7 @@ import org.junit.rules.ExternalResource;
 public class TestApplicationRule extends ExternalResource {
 
     private final DropwizardTestSupport<Configuration> testSupport;
-    
+
     public TestApplicationRule(){
         Configuration configuration = new Configuration();
         ((DefaultLoggingFactory)configuration.getLoggingFactory()).setLevel("DEBUG");
@@ -49,7 +49,7 @@ public class TestApplicationRule extends ExternalResource {
     public URI baseUri() {
         return URI.create("http://localhost:" + testSupport.getLocalPort() + "/application");
     }
-    
+
     public DropwizardTestSupport<Configuration> getSupport(){
         return testSupport;
     }
@@ -63,7 +63,7 @@ public class TestApplicationRule extends ExternalResource {
     protected void after() {
         testSupport.after();
     }
-    
+
     private class FakeApplication extends Application<Configuration> {
 
         @Override

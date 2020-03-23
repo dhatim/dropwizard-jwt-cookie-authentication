@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Dhatim
+ * Copyright 2020 Dhatim
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -155,6 +155,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 DEFAULT_COOKIE_NAME,
                 configuration.isSecure(),
                 configuration.isHttpOnly(),
+                configuration.getSameSite(),
                 key,
                 Ints.checkedCast(Duration.parse(configuration.getSessionExpiryVolatile()).getSeconds()),
                 Ints.checkedCast(Duration.parse(configuration.getSessionExpiryPersistent()).getSeconds()));
