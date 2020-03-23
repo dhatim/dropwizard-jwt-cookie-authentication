@@ -1,12 +1,12 @@
 /**
- * Copyright 2016 Dhatim
- *
+ * Copyright 2020 Dhatim
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,7 +15,8 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * Bundle configuration class
@@ -28,6 +29,9 @@ public class JwtCookieAuthConfiguration {
 
     private boolean httpOnly = true;
 
+    @Nullable
+    private SameSite sameSite = null;
+
     @NotEmpty
     private String sessionExpiryVolatile = "PT30m";
 
@@ -37,6 +41,7 @@ public class JwtCookieAuthConfiguration {
     /**
      * The secret seed use to generate the signing key.
      * It can be used to keep the same key value across application reboots.
+     *
      * @return the signing key seed
      */
     public String getSecretSeed() {
@@ -45,6 +50,7 @@ public class JwtCookieAuthConfiguration {
 
     /**
      * Indicates if the 'secure' flag must be set on cookies
+     *
      * @return if the 'secure' flag must be set on cookies
      */
     public boolean isSecure() {
@@ -53,6 +59,7 @@ public class JwtCookieAuthConfiguration {
 
     /**
      * Indicates if the 'secure' flag must be set on cookies
+     *
      * @return if the 'secure' flag must be set on cookies
      */
     public boolean isHttpOnly() {
@@ -61,6 +68,7 @@ public class JwtCookieAuthConfiguration {
 
     /**
      * duration of volatile cookies (in ISO 8601 format)
+     *
      * @return the duration of volatile cookies
      */
     public String getSessionExpiryVolatile() {
@@ -69,9 +77,19 @@ public class JwtCookieAuthConfiguration {
 
     /**
      * duration of persistent cookies (in ISO 8601 format)
+     *
      * @return the duration of persistent cookies
      */
     public String getSessionExpiryPersistent() {
         return sessionExpiryPersistent;
+    }
+
+    /**
+     * {@code SameSite} cookie attribute value, as described <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#samesite-cookie-attribute">here</a>.
+     *
+     * @return {@code SameSite} cookie attribute value, or {@code null} if not set
+     */
+    public SameSite getSameSite() {
+        return sameSite;
     }
 }

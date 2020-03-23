@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Dhatim
+ * Copyright 2020 Dhatim
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,7 +31,7 @@ class JwtCookieSecurityContext implements SecurityContext{
         this.subject = subject;
         this.secure = secure;
     }
-    
+
     @Override
     public Principal getUserPrincipal() {
         return subject;
@@ -53,5 +53,5 @@ class JwtCookieSecurityContext implements SecurityContext{
     public String getAuthenticationScheme() {
         return "JWT_COOKIE";
     }
-    
+
 }

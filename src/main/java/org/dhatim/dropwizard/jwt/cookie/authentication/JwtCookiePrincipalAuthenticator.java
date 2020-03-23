@@ -1,12 +1,12 @@
 /**
- * Copyright 2016 Dhatim
- *
+ * Copyright 2020 Dhatim
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -20,7 +20,8 @@ import io.dropwizard.auth.Authenticator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.security.SecurityException;
+
 import java.security.Key;
 import java.util.Optional;
 import java.util.function.Function;
@@ -38,8 +39,8 @@ class JwtCookiePrincipalAuthenticator<P extends JwtCookiePrincipal> implements A
     @Override
     public Optional<P> authenticate(String credentials) throws AuthenticationException {
         try {
-            return Optional.of(deserializer.apply(Jwts.parser().setSigningKey(key).parseClaimsJws(credentials).getBody()));
-        } catch (ExpiredJwtException | SignatureException e) {
+            return Optional.of(deserializer.apply(Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(credentials).getBody()));
+        } catch (ExpiredJwtException | SecurityException e) {
             return Optional.empty();
         }
     }
