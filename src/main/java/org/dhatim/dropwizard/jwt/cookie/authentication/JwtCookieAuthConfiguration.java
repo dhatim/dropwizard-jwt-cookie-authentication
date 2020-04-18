@@ -32,6 +32,9 @@ public class JwtCookieAuthConfiguration {
     @Nullable
     private SameSite sameSite = null;
 
+    @Nullable
+    private String domain = null;
+
     @NotEmpty
     private String sessionExpiryVolatile = "PT30m";
 
@@ -49,36 +52,36 @@ public class JwtCookieAuthConfiguration {
     }
 
     /**
-     * Indicates if the 'secure' flag must be set on cookies
+     * Check if the {@code Secure} cookie attribute is set, as described <a href="https://tools.ietf.org/html/rfc6265#section-5.2.5">here</a>.
      *
-     * @return if the 'secure' flag must be set on cookies
+     * @return {@code true} if the {@code Secure} cookie attribute is set.
      */
     public boolean isSecure() {
         return secure;
     }
 
     /**
-     * Indicates if the 'secure' flag must be set on cookies
+     * Check if the {@code HttpOnly} cookie attribute is set, as described <a href="https://tools.ietf.org/html/rfc6265#section-5.2.6">here</a>.
      *
-     * @return if the 'secure' flag must be set on cookies
+     * @return {@code true} if the {@code HttpOnly} cookie attribute is set.
      */
     public boolean isHttpOnly() {
         return httpOnly;
     }
 
     /**
-     * duration of volatile cookies (in ISO 8601 format)
+     * Duration of cookie, if volatile (in ISO 8601 format).
      *
-     * @return the duration of volatile cookies
+     * @return the duration of a volatile cookie.
      */
     public String getSessionExpiryVolatile() {
         return sessionExpiryVolatile;
     }
 
     /**
-     * duration of persistent cookies (in ISO 8601 format)
+     * Duration of cookie, if persistent (in ISO 8601 format).
      *
-     * @return the duration of persistent cookies
+     * @return the duration of a persistent cookie.
      */
     public String getSessionExpiryPersistent() {
         return sessionExpiryPersistent;
@@ -91,5 +94,14 @@ public class JwtCookieAuthConfiguration {
      */
     public SameSite getSameSite() {
         return sameSite;
+    }
+
+    /**
+     * {@code Domain} cookie attribute value, as described <a href="https://tools.ietf.org/html/rfc6265#section-5.2.3">here</a>.
+     *
+     * @return {@code Domain} cookie attribute value, or {@code null} if not set
+     */
+    public String getDomain() {
+        return domain;
     }
 }
