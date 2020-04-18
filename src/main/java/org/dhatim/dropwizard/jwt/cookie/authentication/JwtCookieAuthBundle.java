@@ -155,6 +155,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 DEFAULT_COOKIE_NAME,
                 configuration.isSecure(),
                 configuration.isHttpOnly(),
+                configuration.getDomain(),
                 configuration.getSameSite(),
                 key,
                 Ints.checkedCast(Duration.parse(configuration.getSessionExpiryVolatile()).getSeconds()),

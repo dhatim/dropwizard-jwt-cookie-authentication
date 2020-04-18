@@ -35,6 +35,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
     private static final String COOKIE_TEMPLATE = "=%s; Path=/";
     private static final String SECURE_FLAG = "; Secure";
     private static final String HTTP_ONLY_FLAG = "; HttpOnly";
+    private static final String DOMAIN_FLAG = "; Domain=";
     private static final String SAME_SITE_FLAG = "; SameSite=";
     private static final String DELETE_COOKIE_TEMPLATE = "=; Path=/; expires=Thu, 01-Jan-70 00:00:00 GMT";
 
@@ -55,6 +56,7 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
             String cookieName,
             boolean secure,
             boolean httpOnly,
+            String domain,
             SameSite sameSite,
             Key signingKey,
             int volatileSessionDuration,
@@ -69,6 +71,9 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
         }
         if (httpOnly) {
             cookieFormatBuilder.append(HTTP_ONLY_FLAG);
+        }
+        if (domain != null) {
+            cookieFormatBuilder.append(DOMAIN_FLAG).append(domain);
         }
         if (sameSite != null) {
             cookieFormatBuilder.append(SAME_SITE_FLAG).append(sameSite.value);
