@@ -80,7 +80,11 @@ class JwtCookieAuthResponseFilter<P extends JwtCookiePrincipal> implements Conta
         }
         this.sessionCookieFormat = cookieFormatBuilder.toString();
         this.persistentCookieFormat = sessionCookieFormat + "; Max-Age=%d;";
-        this.deleteCookie = cookieName + DELETE_COOKIE_TEMPLATE;
+        StringBuilder deleteCookieBuilder = new StringBuilder(cookieName).append(DELETE_COOKIE_TEMPLATE);
+        if (domain != null) {
+            deleteCookieBuilder.append(DOMAIN_FLAG).append(domain);
+        }
+        this.deleteCookie = deleteCookieBuilder.toString();
         this.signingKey = signingKey;
         this.volatileSessionDuration = volatileSessionDuration;
         this.persistentSessionDuration = persistentSessionDuration;
