@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dhatim</groupId>
         <artifactId>root-oss</artifactId>
-        <version>18.0.0</version>
+        <version>21.1.22</version>
     </parent>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
@@ -16,7 +16,7 @@
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>@
         </license>
     </licenses>
     <developers>
@@ -33,7 +33,7 @@
         <url>git@github.com:dhatim/dropwizard-jwt-cookie-authentication.git</url>
     </scm>
     <properties>
-        <jjwt.version>0.11.1</jjwt.version>
+        <jjwt.version>0.11.2</jjwt.version>
         <enforcer.fail>false</enforcer.fail>
     </properties>
     <dependencies>
