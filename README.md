@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/dhatim/dropwizard-jwt-cookie-authentication/workflows/build/badge.svg)](https://github.com/dhatim/dropwizard-jwt-authentication/actions)
+[![Build Status](https://github.com/dhatim/dropwizard-jwt-cookie-authentication/workflows/build/badge.svg)](https://github.com/dhatim/dropwizard-jwt-cookie-authentication/actions)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dhatim/dropwizard-jwt-cookie-authentication/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dhatim/dropwizard-jwt-cookie-authentication)
 [![Coverage Status](https://coveralls.io/repos/github/dhatim/dropwizard-jwt-cookie-authentication/badge.svg?branch=master)](https://coveralls.io/github/dhatim/dropwizard-jwt-cookie-authentication?branch=master)
 [![Javadoc](https://www.javadoc.io/badge/org.dhatim/dropwizard-jwt-cookie-authentication.svg)](http://www.javadoc.io/doc/org.dhatim/dropwizard-jwt-cookie-authentication)
