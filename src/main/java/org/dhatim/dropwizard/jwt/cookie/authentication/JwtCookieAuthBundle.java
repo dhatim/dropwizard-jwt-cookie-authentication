@@ -51,6 +51,7 @@ import java.util.function.Function;
  */
 public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePrincipal> implements ConfiguredBundle<C> {
 
+    public static final String JWT_COOKIE_DEFAULT_NAME = "sessionToken";
     private static final String JWT_COOKIE_PREFIX = "jwtCookie";
 
     private final Class<P> principalType;
@@ -134,7 +135,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
     }
 
     /**
-     * Get a filter that will desezialize the principal from JWT cookies found in HTTP requests
+     * Get a filter that will deserialize the principal from JWT cookies found in HTTP requests
      *
      * @param key        the key used to validate the JWT
      * @param cookieName the name of the cookie holding the JWT
@@ -147,6 +148,17 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .setPrefix(JWT_COOKIE_PREFIX)
                 .setAuthorizer((Authorizer<P>) (P::isInRole))
                 .buildAuthFilter();
+    }
+
+    /**
+     * Get a filter that will deserialize the principal from JWT cookies found in HTTP requests,
+     * using the default cookie name.
+     *
+     * @param key the key used to validate the JWT
+     * @return the request filter
+     */
+    public AuthFilter<String, P> getAuthRequestFilter(Key key) {
+        return getAuthRequestFilter(key, JWT_COOKIE_DEFAULT_NAME);
     }
 
     /**

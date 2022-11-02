@@ -18,6 +18,8 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 
+import static org.dhatim.dropwizard.jwt.cookie.authentication.JwtCookieAuthBundle.JWT_COOKIE_DEFAULT_NAME;
+
 /**
  * Bundle configuration class
  */
@@ -25,7 +27,7 @@ public class JwtCookieAuthConfiguration {
 
     private String secretSeed;
 
-    private String cookieName = "sessionToken";
+    private String cookieName = JWT_COOKIE_DEFAULT_NAME;
 
     private boolean secure = false;
 
