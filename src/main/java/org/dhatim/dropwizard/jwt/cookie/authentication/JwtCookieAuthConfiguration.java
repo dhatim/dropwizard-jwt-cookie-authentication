@@ -25,6 +25,8 @@ public class JwtCookieAuthConfiguration {
 
     private String secretSeed;
 
+    private String cookieName = "sessionToken";
+
     private boolean secure = false;
 
     private boolean httpOnly = true;
@@ -49,6 +51,15 @@ public class JwtCookieAuthConfiguration {
      */
     public String getSecretSeed() {
         return secretSeed;
+    }
+
+    /**
+     * The name of the cookie holding the JWT. Its default value is "sessionToken".
+     *
+     * @return the cookie name
+     */
+    public String getCookieName() {
+        return cookieName;
     }
 
     /**
