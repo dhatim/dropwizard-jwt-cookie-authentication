@@ -1,12 +1,12 @@
 /**
  * Copyright 2020 Dhatim
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -30,6 +30,11 @@ import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.SecretKeySpec;
+import javax.ws.rs.container.ContainerResponseFilter;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -37,33 +42,31 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.container.ContainerResponseFilter;
-import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 /**
  * Dopwizard bundle
+ *
  * @param <C> Your application configuration class
  * @param <P> the class of the principal that will be serialized in / deserialized from JWT cookies
  */
-public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePrincipal> implements ConfiguredBundle<C>{
+public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePrincipal> implements ConfiguredBundle<C> {
 
+    public static final String JWT_COOKIE_DEFAULT_NAME = "sessionToken";
     private static final String JWT_COOKIE_PREFIX = "jwtCookie";
-    private static final String DEFAULT_COOKIE_NAME = "sessionToken";
 
     private final Class<P> principalType;
-    private final Function<P,Claims> serializer;
+    private final Function<P, Claims> serializer;
     private final Function<Claims, P> deserializer;
     private Function<C, JwtCookieAuthConfiguration> configurationSupplier;
     private BiFunction<C, Environment, Key> keySuppplier;
 
     /**
      * Get a bundle instance that will use DefaultJwtCookiePrincipal
+     *
      * @param <C> Your application configuration class
      * @return a bundle instance that will use DefaultJwtCookiePrincipal
      */
-    public static <C extends Configuration> JwtCookieAuthBundle<C, DefaultJwtCookiePrincipal> getDefault(){
+    public static <C extends Configuration> JwtCookieAuthBundle<C, DefaultJwtCookiePrincipal> getDefault() {
         return new JwtCookieAuthBundle<>(
                 DefaultJwtCookiePrincipal.class,
                 DefaultJwtCookiePrincipal::getClaims,
@@ -72,11 +75,12 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
 
     /**
      * Build a new instance of JwtCookieAuthBundle
+     *
      * @param principalType the class of the principal that will be serialized in / deserialized from JWT cookies
-     * @param serializer a function to serialize principals into JWT claims
-     * @param deserializer a function to deserialize JWT claims into principals
+     * @param serializer    a function to serialize principals into JWT claims
+     * @param deserializer  a function to deserialize JWT claims into principals
      */
-    public JwtCookieAuthBundle(Class<P> principalType, Function<P,Claims> serializer, Function<Claims, P> deserializer) {
+    public JwtCookieAuthBundle(Class<P> principalType, Function<P, Claims> serializer, Function<Claims, P> deserializer) {
         this.principalType = principalType;
         this.serializer = serializer;
         this.deserializer = deserializer;
@@ -85,16 +89,18 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
 
     /**
      * If you want to sign the JWT with your own key, specify it here
+     *
      * @param keySupplier a bi-function which will return the signing key from the configuration and environment
      * @return this
      */
-    public JwtCookieAuthBundle<C, P> withKeyProvider(BiFunction<C, Environment, Key> keySupplier){
+    public JwtCookieAuthBundle<C, P> withKeyProvider(BiFunction<C, Environment, Key> keySupplier) {
         this.keySuppplier = keySupplier;
         return this;
     }
 
     /**
      * If you need to configure the bundle, specify it here
+     *
      * @param configurationSupplier a bi-function which will return the bundle configuration from the application configuration
      * @return this
      */
@@ -121,7 +127,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .orElseGet(() -> generateKey(conf.getSecretSeed()));
 
         JerseyEnvironment jerseyEnvironment = environment.jersey();
-        jerseyEnvironment.register(new AuthDynamicFeature(getAuthRequestFilter(key)));
+        jerseyEnvironment.register(new AuthDynamicFeature(getAuthRequestFilter(key, conf.getCookieName())));
         jerseyEnvironment.register(new AuthValueFactoryProvider.Binder<>(principalType));
         jerseyEnvironment.register(RolesAllowedDynamicFeature.class);
         jerseyEnvironment.register(getAuthResponseFilter(key, conf));
@@ -129,22 +135,36 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
     }
 
     /**
-     * Get a filter that will desezialize the principal from JWT cookies found in HTTP requests
-     * @param key the key used to validate the JWT
+     * Get a filter that will deserialize the principal from JWT cookies found in HTTP requests
+     *
+     * @param key        the key used to validate the JWT
+     * @param cookieName the name of the cookie holding the JWT
      * @return the request filter
      */
-    public AuthFilter<String, P> getAuthRequestFilter(Key key){
+    public AuthFilter<String, P> getAuthRequestFilter(Key key, String cookieName) {
         return new JwtCookieAuthRequestFilter.Builder()
-                .setCookieName(DEFAULT_COOKIE_NAME)
+                .setCookieName(cookieName)
                 .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
                 .setPrefix(JWT_COOKIE_PREFIX)
-                .setAuthorizer((Authorizer<P>)(P::isInRole))
+                .setAuthorizer((Authorizer<P>) (P::isInRole))
                 .buildAuthFilter();
     }
 
     /**
+     * Get a filter that will deserialize the principal from JWT cookies found in HTTP requests,
+     * using the default cookie name.
+     *
+     * @param key the key used to validate the JWT
+     * @return the request filter
+     */
+    public AuthFilter<String, P> getAuthRequestFilter(Key key) {
+        return getAuthRequestFilter(key, JWT_COOKIE_DEFAULT_NAME);
+    }
+
+    /**
      * Get a filter that will serialize principals into JWTs and add them to HTTP response cookies
-     * @param key the key used to sign the JWT
+     *
+     * @param key           the key used to sign the JWT
      * @param configuration cookie configuration (secure, httpOnly, expiration...)
      * @return the response filter
      */
@@ -152,7 +172,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         return new JwtCookieAuthResponseFilter<>(
                 principalType,
                 serializer,
-                DEFAULT_COOKIE_NAME,
+                configuration.getCookieName(),
                 configuration.isSecure(),
                 configuration.isHttpOnly(),
                 configuration.getDomain(),
@@ -164,9 +184,10 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
 
     /**
      * Generate a HMAC SHA256 Key that can be used to sign JWTs
+     *
      * @param secretSeed a seed from which the key will be generated.
-     * Identical seeds will generate identical keys.
-     * If null, a random key is returned.
+     *                   Identical seeds will generate identical keys.
+     *                   If null, a random key is returned.
      * @return a HMAC SHA256 Key
      */
     public static Key generateKey(String secretSeed) {
@@ -178,10 +199,10 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .orElseGet(getHmacSha256KeyGenerator()::generateKey);
     }
 
-    private static KeyGenerator getHmacSha256KeyGenerator(){
-        try{
+    private static KeyGenerator getHmacSha256KeyGenerator() {
+        try {
             return KeyGenerator.getInstance(SignatureAlgorithm.HS256.getJcaName());
-        } catch(NoSuchAlgorithmException e){
+        } catch (NoSuchAlgorithmException e) {
             throw new SecurityException(e);
         }
     }
