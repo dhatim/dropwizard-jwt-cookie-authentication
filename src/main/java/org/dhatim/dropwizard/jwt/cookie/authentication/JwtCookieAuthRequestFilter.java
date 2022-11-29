@@ -23,7 +23,6 @@ import java.util.Optional;
 import javax.annotation.Priority;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Priorities;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Cookie;
 
@@ -54,7 +53,7 @@ class JwtCookieAuthRequestFilter<P extends JwtCookiePrincipal> extends AuthFilte
                 }
             }
         }
-        throw new WebApplicationException(unauthorizedHandler.buildResponse(prefix, realm));
+        throw unauthorizedHandler.buildException(prefix, realm);
     }
 
     public static class Builder<P extends JwtCookiePrincipal> extends AuthFilterBuilder<String, P, JwtCookieAuthRequestFilter<P>> {
