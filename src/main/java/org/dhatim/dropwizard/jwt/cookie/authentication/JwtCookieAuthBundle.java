@@ -24,6 +24,8 @@ import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.Authorizer;
+import io.dropwizard.auth.DefaultUnauthorizedHandler;
+import io.dropwizard.auth.UnauthorizedHandler;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -59,6 +61,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
     private final Function<Claims, P> deserializer;
     private Function<C, JwtCookieAuthConfiguration> configurationSupplier;
     private BiFunction<C, Environment, Key> keySuppplier;
+    private UnauthorizedHandler unauthorizedHandler;
 
     /**
      * Get a bundle instance that will use DefaultJwtCookiePrincipal
@@ -85,6 +88,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         this.serializer = serializer;
         this.deserializer = deserializer;
         this.configurationSupplier = c -> new JwtCookieAuthConfiguration();
+        this.unauthorizedHandler = new DefaultUnauthorizedHandler();
     }
 
     /**
@@ -106,6 +110,17 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
      */
     public JwtCookieAuthBundle<C, P> withConfigurationSupplier(Function<C, JwtCookieAuthConfiguration> configurationSupplier) {
         this.configurationSupplier = configurationSupplier;
+        return this;
+    }
+
+    /**
+     * If you want to use a different unauthorized handler, specify it here
+     *
+     * @param unauthorizedHandler an UnauthorizedHandler that will be used whenever a request fails to authenticate
+     * @return this
+     */
+    public JwtCookieAuthBundle<C, P> withUnauthorizedHandler(UnauthorizedHandler unauthorizedHandler) {
+        this.unauthorizedHandler = unauthorizedHandler;
         return this;
     }
 
@@ -147,6 +162,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
                 .setPrefix(JWT_COOKIE_PREFIX)
                 .setAuthorizer((Authorizer<P>) (P::isInRole))
+                .setUnauthorizedHandler(unauthorizedHandler)
                 .buildAuthFilter();
     }
 
