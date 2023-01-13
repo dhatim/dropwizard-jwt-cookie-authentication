@@ -26,7 +26,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>4.2.1</version>
+    <version>4.5.0</version>
 </dependency>
   ```
 
