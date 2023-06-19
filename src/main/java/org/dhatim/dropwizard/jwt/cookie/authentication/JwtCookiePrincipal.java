@@ -15,8 +15,10 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.security.Principal;
-import javax.ws.rs.container.ContainerRequestContext;
 
 /**
  * A principal persisted in JWT cookies

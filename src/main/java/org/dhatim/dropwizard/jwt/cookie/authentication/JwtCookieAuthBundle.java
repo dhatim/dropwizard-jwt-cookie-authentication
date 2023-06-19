@@ -18,25 +18,20 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Ints;
-import io.dropwizard.Configuration;
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.auth.AuthDynamicFeature;
-import io.dropwizard.auth.AuthFilter;
-import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.auth.Authorizer;
-import io.dropwizard.auth.DefaultUnauthorizedHandler;
-import io.dropwizard.auth.UnauthorizedHandler;
+import io.dropwizard.auth.*;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
+import jakarta.ws.rs.container.ContainerResponseFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.container.ContainerResponseFilter;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -161,7 +156,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
                 .setCookieName(cookieName)
                 .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
                 .setPrefix(JWT_COOKIE_PREFIX)
-                .setAuthorizer((Authorizer<P>) (P::isInRole))
+                .setAuthorizer((Authorizer<P>) (principal, role, requestContext) -> principal.isInRole(role))
                 .setUnauthorizedHandler(unauthorizedHandler)
                 .buildAuthFilter();
     }

@@ -4,7 +4,7 @@
 [![Javadoc](https://www.javadoc.io/badge/org.dhatim/dropwizard-jwt-cookie-authentication.svg)](http://www.javadoc.io/doc/org.dhatim/dropwizard-jwt-cookie-authentication)
 [![Mentioned in Awesome Dropwizard](https://awesome.re/mentioned-badge.svg)](https://github.com/stve/awesome-dropwizard)
 
-**Please note version 4 requires Dropwizard 2.**
+**Please note version 5 requires Java 11 and Dropwizard 4.**
 
 # dropwizard-jwt-cookie-authentication
 
@@ -26,7 +26,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>4.5.0</version>
+    <version>5.0.0</version>
 </dependency>
   ```
 

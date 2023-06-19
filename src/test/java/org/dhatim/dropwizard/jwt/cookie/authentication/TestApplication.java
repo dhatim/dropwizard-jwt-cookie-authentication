@@ -1,13 +1,13 @@
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import com.codahale.metrics.health.HealthCheck;
-import io.dropwizard.Application;
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.server.SimpleServerFactory;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jetty.HttpConnectorFactory;
-import io.dropwizard.logging.DefaultLoggingFactory;
-import io.dropwizard.server.SimpleServerFactory;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.logging.common.DefaultLoggingFactory;
 
 public class TestApplication extends Application<Configuration> {
 

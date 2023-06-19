@@ -15,8 +15,8 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotEmpty;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotEmpty;
 
 import static org.dhatim.dropwizard.jwt.cookie.authentication.JwtCookieAuthBundle.JWT_COOKIE_DEFAULT_NAME;
 
