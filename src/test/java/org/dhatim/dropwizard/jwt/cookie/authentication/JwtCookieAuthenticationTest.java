@@ -15,19 +15,25 @@
  */
 package org.dhatim.dropwizard.jwt.cookie.authentication;
 
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.Configuration;
+import io.dropwizard.jackson.Jackson;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.jsonwebtoken.lang.Strings;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
+import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,10 +47,26 @@ import java.util.UUID;
 public class JwtCookieAuthenticationTest {
 
     private static final DropwizardAppExtension<Configuration> EXT = new DropwizardAppExtension<Configuration>(TestApplication.class);
+
+    private static Client CLIENT;
+
+    @BeforeAll
+    protected static void createClient() {
+        JerseyClientBuilder builder = new JerseyClientBuilder(EXT.getEnvironment());
+        builder.using(Jackson.newObjectMapper());
+        builder.setApacheHttpClientBuilder(new HttpClientBuilder(EXT.getEnvironment()) {
+            @Override
+            protected org.apache.hc.client5.http.impl.classic.HttpClientBuilder customizeBuilder(org.apache.hc.client5.http.impl.classic.HttpClientBuilder builder) {
+                return super.customizeBuilder(builder).setDefaultCookieStore(new BasicCookieStore());
+            }
+        });
+        CLIENT = builder.build("client");
+    }
+
     private static final String COOKIE_NAME = "sessionToken";
 
     private WebTarget getTarget() {
-        return EXT.client().target("http://localhost:" + EXT.getLocalPort() + "/application").path("principal");
+        return CLIENT.target("http://localhost:" + EXT.getLocalPort() + "/application/principal");
     }
 
     @Test
