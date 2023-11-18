@@ -26,7 +26,7 @@ Add the dropwizard-jwt-cookie-authentication library as a dependency to your `po
 <dependency>
     <groupId>org.dhatim</groupId>
     <artifactId>dropwizard-jwt-cookie-authentication</artifactId>
-    <version>5.0.1</version>
+    <version>5.1.0</version>
 </dependency>
   ```
 
@@ -167,7 +167,7 @@ JwtCookieAuthBundle jwtCookieAuthBundle = new JwtCookieAuthBundle<>(
     MyJwtCookiePrincipal::toClaims,
     MyJwtCookiePrincipal::new);
 
-Key key = JwtCookieAuthBundle.generateKey(configuration.getJwtCookieAuth().getSecretSeed());
+SecretKey key = JwtCookieAuthBundle.generateKey(configuration.getJwtCookieAuth().getSecretSeed());
 
 environment.jersey().register(
         new PolymorphicAuthDynamicFeature<>(
