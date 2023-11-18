@@ -1,12 +1,12 @@
 /**
  * Copyright 2023 Dhatim
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -17,7 +17,9 @@ package org.dhatim.dropwizard.jwt.cookie.authentication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ClaimsBuilder;
 import io.jsonwebtoken.Jwts;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -30,25 +32,26 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
     private final static String PERSISTENT = "pst"; // long-term token == rememberme
     private final static String ROLES = "rls";
 
-    protected final Claims claims;
+    protected final ClaimsBuilder claimsBuilder;
 
     /**
      * Builds a new instance of DefaultJwtCookiePrincipal
      *
-     * @param name the principal name
+     * @param name       the principal name
      * @param persistent if the cookie must be persistent
-     * @param roles the roles the principal is in
-     * @param claims custom data associated with the principal
+     * @param roles      the roles the principal is in
+     * @param claims     custom data associated with the principal
      */
     public DefaultJwtCookiePrincipal(
             @JsonProperty("name") String name,
             @JsonProperty("persistent") boolean persistent,
             @JsonProperty("roles") Collection<String> roles,
             @JsonProperty("claims") Claims claims) {
-        this.claims = Optional.ofNullable(claims).orElseGet(Jwts::claims);
-        this.claims.setSubject(name);
-        this.claims.put(PERSISTENT, persistent);
-        this.claims.put(ROLES, roles);
+        this.claimsBuilder = Jwts.claims();
+        if (claims != null) {
+            claimsBuilder.add(claims);
+        }
+        claimsBuilder.subject(name).add(PERSISTENT, persistent).add(ROLES, roles);
     }
 
     /**
@@ -66,7 +69,10 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * @param claims the JWT claims
      */
     public DefaultJwtCookiePrincipal(Claims claims) {
-        this.claims = claims;
+        this.claimsBuilder = Jwts.claims();
+        if (claims != null) {
+            claimsBuilder.add(claims);
+        }
     }
 
     /**
@@ -75,7 +81,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * @return the claims
      */
     public Claims getClaims() {
-        return claims;
+        return claimsBuilder.build();
     }
 
     /**
@@ -95,7 +101,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * @return the roles
      */
     public Collection<String> getRoles() {
-        return Optional.ofNullable(claims.get(ROLES))
+        return Optional.ofNullable(getClaims().get(ROLES))
                 .map(Collection.class::cast)
                 .orElse(Collections.emptyList());
     }
@@ -106,7 +112,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * @param roles the roles
      */
     public void setRoles(Collection<String> roles) {
-        claims.put(ROLES, roles);
+        claimsBuilder.add(ROLES, roles);
     }
 
     /**
@@ -116,18 +122,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      */
     @Override
     public boolean isPersistent() {
-        return claims.get(PERSISTENT) == Boolean.TRUE;
-    }
-
-    /**
-     * Set if the cookie must be persistent
-     *
-     * @param persistent if the cookie must be persistent
-     * @deprecated  Typo in method name. Replaced by {@link #setPersistent(boolean)}
-     */
-    @Deprecated
-    public void setPresistent(boolean persistent) {
-        setPersistent(persistent);
+        return getClaims().get(PERSISTENT) == Boolean.TRUE;
     }
 
     /**
@@ -136,7 +131,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * @param persistent if the cookie must be persistent
      */
     public void setPersistent(boolean persistent) {
-        claims.put(PERSISTENT, persistent);
+        claimsBuilder.add(PERSISTENT, persistent);
     }
 
     /**
@@ -146,7 +141,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      */
     @Override
     public String getName() {
-        return (String) claims.getSubject();
+        return getClaims().getSubject();
     }
 
     /**
@@ -155,7 +150,7 @@ public class DefaultJwtCookiePrincipal implements JwtCookiePrincipal {
      * @param name the name
      */
     public void setName(String name) {
-        claims.setSubject(name);
+        claimsBuilder.subject(name);
     }
 
 }

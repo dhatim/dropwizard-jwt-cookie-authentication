@@ -31,9 +31,9 @@ import jakarta.ws.rs.container.ContainerResponseFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Optional;
@@ -55,7 +55,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
     private final Function<P, Claims> serializer;
     private final Function<Claims, P> deserializer;
     private Function<C, JwtCookieAuthConfiguration> configurationSupplier;
-    private BiFunction<C, Environment, Key> keySuppplier;
+    private BiFunction<C, Environment, SecretKey> keySuppplier;
     private UnauthorizedHandler unauthorizedHandler;
 
     /**
@@ -92,7 +92,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
      * @param keySupplier a bi-function which will return the signing key from the configuration and environment
      * @return this
      */
-    public JwtCookieAuthBundle<C, P> withKeyProvider(BiFunction<C, Environment, Key> keySupplier) {
+    public JwtCookieAuthBundle<C, P> withKeyProvider(BiFunction<C, Environment, SecretKey> keySupplier) {
         this.keySuppplier = keySupplier;
         return this;
     }
@@ -131,7 +131,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
         JwtCookieAuthConfiguration conf = configurationSupplier.apply(configuration);
 
         //build the key from the key factory if it was provided
-        Key key = Optional
+        SecretKey key = Optional
                 .ofNullable(keySuppplier)
                 .map(k -> k.apply(configuration, environment))
                 .orElseGet(() -> generateKey(conf.getSecretSeed()));
@@ -151,7 +151,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
      * @param cookieName the name of the cookie holding the JWT
      * @return the request filter
      */
-    public AuthFilter<String, P> getAuthRequestFilter(Key key, String cookieName) {
+    public AuthFilter<String, P> getAuthRequestFilter(SecretKey key, String cookieName) {
         return new JwtCookieAuthRequestFilter.Builder()
                 .setCookieName(cookieName)
                 .setAuthenticator(new JwtCookiePrincipalAuthenticator(key, deserializer))
@@ -168,7 +168,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
      * @param key the key used to validate the JWT
      * @return the request filter
      */
-    public AuthFilter<String, P> getAuthRequestFilter(Key key) {
+    public AuthFilter<String, P> getAuthRequestFilter(SecretKey key) {
         return getAuthRequestFilter(key, JWT_COOKIE_DEFAULT_NAME);
     }
 
@@ -179,7 +179,7 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
      * @param configuration cookie configuration (secure, httpOnly, expiration...)
      * @return the response filter
      */
-    public ContainerResponseFilter getAuthResponseFilter(Key key, JwtCookieAuthConfiguration configuration) {
+    public ContainerResponseFilter getAuthResponseFilter(SecretKey key, JwtCookieAuthConfiguration configuration) {
         return new JwtCookieAuthResponseFilter<>(
                 principalType,
                 serializer,
@@ -201,11 +201,11 @@ public class JwtCookieAuthBundle<C extends Configuration, P extends JwtCookiePri
      *                   If null, a random key is returned.
      * @return a HMAC SHA256 Key
      */
-    public static Key generateKey(String secretSeed) {
+    public static SecretKey generateKey(String secretSeed) {
         // make a key from the seed if it was provided
         return Optional.ofNullable(secretSeed)
                 .map(seed -> Hashing.sha256().newHasher().putString(seed, StandardCharsets.UTF_8).hash().asBytes())
-                .map(k -> (Key) new SecretKeySpec(k, SignatureAlgorithm.HS256.getJcaName()))
+                .map(k -> (SecretKey) new SecretKeySpec(k, SignatureAlgorithm.HS256.getJcaName()))
                 //else generate a random key
                 .orElseGet(getHmacSha256KeyGenerator()::generateKey);
     }

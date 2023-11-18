@@ -22,16 +22,16 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SecurityException;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Optional;
 import java.util.function.Function;
 
 class JwtCookiePrincipalAuthenticator<P extends JwtCookiePrincipal> implements Authenticator<String, P> {
 
-    private final Key key;
+    private final SecretKey key;
     private final Function<Claims, P> deserializer;
 
-    public JwtCookiePrincipalAuthenticator(Key key, Function<Claims, P> deserializer) {
+    public JwtCookiePrincipalAuthenticator(SecretKey key, Function<Claims, P> deserializer) {
         this.key = key;
         this.deserializer = deserializer;
     }
@@ -39,7 +39,7 @@ class JwtCookiePrincipalAuthenticator<P extends JwtCookiePrincipal> implements A
     @Override
     public Optional<P> authenticate(String credentials) throws AuthenticationException {
         try {
-            return Optional.of(deserializer.apply(Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(credentials).getBody()));
+            return Optional.of(deserializer.apply(Jwts.parser().verifyWith(key).build().parseClaimsJws(credentials).getBody()));
         } catch (ExpiredJwtException | SecurityException e) {
             return Optional.empty();
         }
